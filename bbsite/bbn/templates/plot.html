@@ -1,0 +1,1922 @@
+{% extends "home.html" %}
+{% include 'head_css.html' %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<style type="text/css">
+	.ul .uTSP {
+		border: 1px solid black;
+	}
+
+	.mystyle:hover {
+		color: orange
+	}
+
+	#maps {
+		height: 75%;
+		width: 75%;
+		margin-left: 300px;
+	}
+
+	.controls {
+		margin-top: 10px;
+		border: 1px solid transparent;
+		border-radius: 2px 0 0 2px;
+		box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		height: 32px;
+		outline: none;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+	}
+
+	#search {
+		background-color: #fff;
+		font-family: Roboto;
+		font-size: 15px;
+		font-weight: 300;
+		margin-left: 12px;
+		padding: 0 11px 0 13px;
+		text-overflow: ellipsis;
+		width: 50%;
+	}
+
+	#search:focus {
+		border-color: #4d90fe;
+	}
+
+	.list-group#userTSP {
+		max-height: 150px;
+		overflow: scroll;
+		-webkit-overflow-scrolling: touch;
+		overflow-x: hidden;
+	}
+</style>
+
+<body>
+	<div class="container">
+		<div class="row" style="height:900px">
+			<div class="col-lg-8" id="row"  style="margin: 50px; margin-left: -50px;">
+				<script type="text/javascript">
+					//get the tour in the backend, and waits for an initial tour
+					var tour;
+					var tourlenBB;
+					vertexShift = 50;
+					var tourVShifted;
+
+					$.ajax({
+						url: 'tour/',
+						method: 'GET',
+						dataType: 'json',
+						success: function(data) {
+							tour = data.tour;
+							tourlenBB = data.tourBBLen;
+							var output = document.getElementById('bbd1');
+							output.innerHTML = data.bbData;
+						},
+						error: function(ex) {
+							alert('no tour!')
+						}
+					});
+
+					//uNodes is the user tour
+					//nodes is kind of like the key
+					let uNodes = [];
+					let nodes = [];
+					nodeSize = 30;
+
+
+					class Node {
+
+						constructor(x, y, nodeSize, nodeNumber, toursize) {
+							this.x = x;
+							this.y = y;
+							this.nodeSize = nodeSize
+							this.move = false;
+							this.speed = 1;
+							this.col = color(255, 100);
+							this.toggle = false;
+							this.nodeNumber = nodeNumber
+							this.toursize = toursize;
+
+						}
+
+						display() {
+							stroke(255);
+							strokeWeight(2);
+							fill(this.col);
+							ellipse(this.x, this.y, this.nodeSize, this.nodeSize);
+							if(this.toursize < 40){
+								rectMode(CORNER);
+								textSize(50);
+								text(this.nodeNumber, this.x + 10, this.y + 10, 100, 100);
+							}
+						}
+
+						wiggle() {
+							this.x += random(-this.speed, this.speed);
+							this.y += random(-this.speed, this.speed);
+						}
+
+						clicked() {
+							var d = dist(mouseX, mouseY, this.x, this.y);
+							if (d < this.nodeSize / 2 && !this.toggle) {
+								this.col = color(100, 50, 69);
+								this.toggle = true;
+								uNodes.push([this.x, this.y, this.nodeNumber])
+								uNodesTour.push(this.x)
+								uNodesTour.push(this.y)
+							} else if (d < this.nodeSize / 2 && this.toggle) {
+								this.col = color(255, 100);
+								this.toggle = false;
+								for (let i = 0; i < uNodes.length; i++) {
+									if (uNodes[i][2] == this.nodeNumber) {
+										//uNodes.splice(i, 1);
+										for (let j = i; j < uNodes.length; j++) {
+											nodes[uNodes[j][2]].col = color(255, 100);
+											nodes[uNodes[j][2]].toggle = false;
+										}
+										uNodes = uNodes.slice(0, i);
+										uNodesTour = uNodesTour.slice(0, i * 2);
+									}
+
+
+								}
+							}
+						}
+
+						toString() {
+							return this.nodeNumber + ' ' + '[' + this.x + ',' + this.y + ']';
+						}
+
+					}
+
+					//on click it runs clicked for all nodes, customTour and uNodes best kept two
+					// uNodes contains points
+					function mousePressed() {
+						if (tour) {
+							var output = document.getElementById('userPath');
+							for (let i = 0; i < tourVShifted.length / 2; i++) {
+								nodes[i].clicked();
+							}
+							let returnString = [];
+							for (let k = 0; k < uNodes.length; k++) {
+								returnString.push(uNodes[k][2]);
+							}
+							output.innerHTML = '<Span style="">' + returnString + '</Span>';
+						}
+					}
+
+					//stops from running setup twice
+					setupSwitch = false;
+					// graphing window
+					var box, box2, loadingAnimation, targetX, targetY, targetXDe, targetYDe, pleaseWait, sel1, input1, but3,
+						raceWinner, timerFig1, timerFig2;
+					// action windows
+					var speedSlider, but1, but2
+					// table
+					var but7;
+
+					var counterLoader = 0;
+
+					function loading() {
+						// draw a loading screen here
+						loadingAnimation = createSprite(600, 400)
+						loadingAnimation.addAnimation('normal', "{% static 'img/loadingScreen/frame-0.png' %}",
+							"{% static 'img/loadingScreen/frame-1.png' %}",
+							"{% static 'img/loadingScreen/frame-2.png' %}",
+							"{% static 'img/loadingScreen/frame-3.png' %}",
+							"{% static 'img/loadingScreen/frame-4.png' %}",
+							"{% static 'img/loadingScreen/frame-6.png' %}",
+							"{% static 'img/loadingScreen/frame-7.png' %}",
+							"{% static 'img/loadingScreen/frame-8.png' %}",
+							"{% static 'img/loadingScreen/frame-9.png' %}",
+							"{% static 'img/loadingScreen/frame-10.png' %}",
+							"{% static 'img/loadingScreen/frame-12.png' %}",
+							"{% static 'img/loadingScreen/frame-13.png' %}",
+							"{% static 'img/loadingScreen/frame-14.png' %}",
+							"{% static 'img/loadingScreen/frame-15.png' %}",
+							"{% static 'img/loadingScreen/frame-16.png' %}",
+							"{% static 'img/loadingScreen/frame-17.png' %}",
+							"{% static 'img/loadingScreen/frame-18.png' %}",
+							"{% static 'img/loadingScreen/frame-19.png' %}",
+							"{% static 'img/loadingScreen/frame-20.png' %}",
+							"{% static 'img/loadingScreen/frame-21.png' %}",
+							"{% static 'img/loadingScreen/frame-22.png' %}",
+							"{% static 'img/loadingScreen/frame-23.png' %}",
+							"{% static 'img/loadingScreen/frame-24.png' %}",
+							"{% static 'img/loadingScreen/frame-25.png' %}",
+							"{% static 'img/loadingScreen/frame-26.png' %}",
+							"{% static 'img/loadingScreen/frame-27.png' %}",
+							"{% static 'img/loadingScreen/frame-28.png' %}",
+							"{% static 'img/loadingScreen/frame-25.png' %}")
+						counterLoader += 1;
+						pleaseWait = createSpan("Loading Please Wait ...");
+						pleaseWait.position(540, 480);
+						pleaseWait.parent('row');
+						pleaseWait.style('color: white');
+					}
+
+					function setup() {
+						p5.disableFriendlyErrors = true;
+						var canvas = createCanvas(1200, 800)
+						canvas.parent("row");
+						background(50, 89, 100);
+
+						if (counterLoader == 0 && !tour) {
+							// draw a loading screen here
+							loading();
+						} else if (tour && !setupSwitch) {
+							// remove loading screen only if there is one
+							if (counterLoader != 0) {
+								loadingAnimation.remove();
+								pleaseWait.remove();
+							}
+
+							input1 = createInput('10');
+							input1.size(60, 25);
+							input1.parent('input1')
+
+							//setups the nodes
+							setupSwitch = true;
+							for (let i = 0; i < tour.length / 2; i++) {
+								nodes.push(new Node(tour[i * 2] + vertexShift, tour[i * 2 + 1] + vertexShift, nodeSize, i, input1.value()));
+							}
+							//shifts the tour
+							tourVShifted = tour.map(function(x) {
+								return x + vertexShift;
+							});
+
+							timerFig1 = createP("Asterisk: 0.0s")
+							timerFig1.position(900, 20)
+							timerFig1.parent('row');
+							timerFig1.style('width', '200px');
+							timerFig1.style('color: white; font-size: 20px')
+							timerFig2 = createP("Blob: 0.0s")
+							timerFig2.position(900, 50);
+							timerFig2.parent('row');
+							timerFig2.style('width', '200px');
+							timerFig2.style('color: white; font-size: 20px')
+
+							speedSlider = createSlider(0, 100, 50);
+							speedSlider.style('width', '150px');
+							speedSlider2 = createSlider(0, 100, 50);
+							speedSlider2.style('width', '150px');
+							but1 = createButton("Race!");
+							but2 = createButton("Reset");
+
+							but1.addClass("btn")
+							but1.addClass("btn-primary")
+							but1.addClass("mx-3")
+							but1.parent("but1");
+							but1.mousePressed(function() {
+								moveToStart();
+							});
+
+							but2.addClass("btn")
+							but2.addClass("btn-primary")
+							but2.addClass("mx-3")
+							but2.parent("but2");
+							but2.mousePressed(function() {
+								resetTour();
+							});
+
+
+							speedSlider.parent("speed");
+							speedSlider2.parent("speed2")
+
+							but3 = createButton("New Problem")
+							but3.addClass('btn')
+							but3.addClass('btn-primary')
+							but3.addClass('mx-3')
+							but3.parent('but3')
+							but3.mousePressed(function() {
+								selectTourListenHack();
+							});
+
+							sel1 = createSelect();
+							sel1.parent('sel1');
+							sel1.option('Default');
+							sel1.option('1');
+							sel1.option('2');
+							sel1.option('3');
+							sel1.option('4');
+							sel1.option('5');
+
+							// buttons for the custom tsp
+
+							but4 = createButton("Add")
+							but4.addClass('btn')
+							but4.addClass('btn-primary')
+							but4.addClass('mx-3')
+							but4.parent('userTSPSubmit')
+							but4.mousePressed(function() {
+								addCTSP(place);
+							});
+
+							but5 = createButton("Remove")
+							but5.addClass('btn')
+							but5.addClass('btn-primary')
+							but5.addClass('mx-3')
+							but5.parent('userTSPSubmit')
+							but5.mousePressed(function() {
+								removeCTSP(addressCur)
+							})
+
+							but6 = createButton("Submit cTSP")
+							but6.addClass('btn')
+							but6.addClass('btn-primary')
+							but6.addClass('mx-3')
+							but6.parent('userTSPSubmit')
+							but6.mousePressed(function() {
+								submitCTSP()
+							})
+
+							but7 = createButton("Initialise Problem")
+							but7.addClass('btn')
+							but7.addClass('btn-primary')
+							but7.addClass('mx-3')
+							but7.parent('initTBut')
+							but7.mousePressed(function() {
+								initialiseTableTour();
+							})
+
+							raceWinner = createP(raceResult);
+							raceWinner.position(800, 750);
+							raceWinner.parent('row');
+							raceWinner.style('width', '500px');
+							raceWinner.style('color: white; font-size: 20px')
+
+							box = createSprite(50, 50);
+							box.addAnimation('normal', "{% static 'img/animation/girl/as0.png' %}",
+								"{% static 'img/animation/girl/as1.png' %}",
+								"{% static 'img/animation/girl/as2.png' %}",
+								"{% static 'img/animation/girl/as3.png' %}",
+								"{% static 'img/animation/girl/as4.png' %}",
+								"{% static 'img/animation/girl/as5.png' %}",
+								"{% static 'img/animation/girl/as6.png' %}",
+								"{% static 'img/animation/girl/as7.png' %}",
+								"{% static 'img/animation/girl/as8.png' %}");
+							box2 = createSprite(150, 50);
+							box2.addAnimation('normal', "{% static 'img/animation/boy/c0.png' %}",
+								"{% static 'img/animation/boy/c1.png' %}",
+								"{% static 'img/animation/boy/c2.png' %}",
+								"{% static 'img/animation/boy/c3.png' %}",
+								"{% static 'img/animation/boy/c4.png' %}",
+								"{% static 'img/animation/boy/c5.png' %}",
+								"{% static 'img/animation/boy/c6.png' %}",
+								"{% static 'img/animation/boy/c7.png' %}",
+								"{% static 'img/animation/boy/c8.png' %}",
+								"{% static 'img/animation/boy/c9.png' %}",
+								"{% static 'img/animation/boy/c10.png' %}",
+								"{% static 'img/animation/boy/c11.png' %}",
+								"{% static 'img/animation/boy/c12.png' %}",
+								"{% static 'img/animation/boy/c13.png' %}",
+								"{% static 'img/animation/boy/c14.png' %}")
+
+
+
+							box.scale = 0.5;
+							box2.scale = 0.5;
+							targetX = tourVShifted[0];
+							targetY = tourVShifted[1];
+							targetYDe = tourVShifted[1];
+							targetXDe = tourVShifted[0];
+
+
+
+						}
+
+						drawSprites();
+					}
+
+					var tmp9 = [0, 0, 0, 0];
+					var tmp10 = [0, 0, 0, 0];
+					uNodesTour = []
+					var reset = false;
+
+
+					function draw() {
+						background(50, 89, 100);
+
+						let fps = frameRate();
+						fill(255);
+						stroke(0);
+						text("FPS: " + fps.toFixed(2), 10, height - 10);
+
+						// graphing elements
+						if (nodes.length == 0 && !setupSwitch) {
+							setup();
+						} else if (tour) {
+							//shows the nodes
+							for (let i = 0; i < nodes.length; i++) {
+								nodes[i].display();
+							}
+							// tour moving elements
+							var speedSliderDom = document.getElementById('speedVal');
+							speedSliderDom.innerHTML = speedSlider.value();
+
+							var speedSliderDom2 = document.getElementById('speedVal2');
+							speedSliderDom2.innerHTML = speedSlider2.value();
+
+							// drawing the users path
+							if (!(uNodesTour === undefined || uNodesTour.length == 0)) {
+								// starting positions 2 will only be true is starting position is true
+								if (!startingPositons && startingPositons2) {
+									resetTour()
+								}
+
+								plotUserTour();
+								if (uNodesTour.length / 2 == tour.length / 2) {
+									race(box, uNodesTour);
+									raceDe(box2, tourVShifted);
+									waitLone = false;
+									reset = true;
+
+								} else {
+									waitLone = false;
+									targetY = uNodesTour[1];
+									targetX = uNodesTour[0];
+									targetXDe = tourVShifted[0];
+									targetYDe = tourVShifted[1];
+									startingPos(box, 50, 50);
+									startingPos(box2, 150, 50);
+
+								}
+							} else {
+								plotBBTour();
+								// tell it to start at the begining
+								if (!reset) {
+									race(box, tourVShifted);
+								} else {
+									targetX = tourVShifted[0];
+									targetY = tourVShifted[1];
+									startingPos(box, 50, 50);
+									startingPos(box2, 150, 50);
+									reset = false;
+									// to reset the animations, flick the reset and flush arrays
+								}
+							}
+						}
+
+						selectListenHack();
+						for (let i = 0; i < backbone2.length; i++) {
+							sketchBB(backbone2[i]);
+						}
+
+						// updates timer element
+						if (wait1 && wait2) {
+							if (resultA == null) {
+								time1Tracker = new Date().getTime();
+							}
+
+							if (resultB == null) {
+								time2Tracker = new Date().getTime();
+							}
+
+							timerFig1.remove();
+							time1 = time1Tracker - at1;
+							timerFig1 = createP("Asterisk: " + (time1 / 1000).toString() + "s")
+							timerFig1.position(900, 20)
+							timerFig1.parent('row');
+							timerFig1.style('width', '200px');
+							timerFig1.style('color: white; font-size: 20px')
+
+							timerFig2.remove();
+							time2 = time2Tracker - bt1;
+							timerFig2 = createP("Blob: " + (time2 / 1000).toString() + "s")
+							timerFig2.position(900, 50);
+							timerFig2.parent('row');
+							timerFig2.style('width', '200px');
+							timerFig2.style('color: white; font-size: 20px')
+
+							if(resultA != null && resultB != null){
+								var tmp = document.getElementById('percentage');
+								var tmpval = (((time1 - time2)/(time2))*100).toFixed(2)
+								var timePercentage
+								if (tmpval < 0){
+									timePercentage = "<p style='font-size:12pt'>Asterisk finished " + ' ' +
+																	 (tmpval*-1).toString() +
+																	 '% ' + "earlier than Blob.</p>";
+								}else{
+									timePercentage = "<p style='font-size:12pt'>Asterisk took " + ' ' +
+																	 tmpval.toString() +
+																	 '% ' + "longer than Blob.</p>";
+								}
+								tmp.innerHTML = timePercentage;
+							}
+						}
+
+						// watches for winner of the races
+						if (!announce && (resultA != null || resultB != null) &&
+							uNodesTour.length / 2 == tour.length / 2) {
+
+							if (resultA == null && resultB != null) {
+								raceResult = "Blob Wins!"
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							} else if (resultA != null && resultB == null) {
+								raceResult = "Asterisk Wins!"
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							} else if (resultA > resultB) {
+								raceResult = "Blob Wins!"
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							} else if (resultA < resultB) {
+								raceResult = "Asterisk Wins!"
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							} else if (resultA == resultB) {
+								raceResult = "Asterisk and Blob draw!"
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							}
+							announce = true
+						}
+
+					}
+
+
+					var announce = false;
+					var raceResult = "Asterisk and Block are ready to race...";
+					var time1 = "Asterisk: 0.0s";
+					var time2 = "Blob: 0.0s";
+					var time1Tracker, time2Tracker
+
+					function sketchBB(backbone2) {
+						stroke(255, 35, 24);
+						strokeWeight(5);
+						noFill();
+
+						beginShape();
+						for (let j = 0; j < backbone2.length; j += 2) {
+							if (backbone2.length > 2) {
+								vertex(backbone2[j] + 50, backbone2[j + 1] + 50);
+							}
+						}
+						endShape();
+
+					}
+
+					var thinking = true;
+					var selectString = 'Default';
+					var selectTourSize = '20';
+					var backbone2 = [];
+
+					function redrawing() {
+						if (thinking) {
+							tour = [];
+						}
+
+						if (loadingAnimation && pleaseWait && counterLoader != 0) {
+							loadingAnimation.remove();
+							pleaseWait.remove();
+						}
+						backbone2 = [];
+						nodes = [];
+						tourVShifted = [];
+
+						for (let i = 0; i < tour.length / 2; i++) {
+							nodes.push(new Node(tour[i * 2] + vertexShift, tour[i * 2 + 1] + vertexShift, nodeSize, i, input1.value()));
+						}
+
+						//shifts the tour
+						tourVShifted = tour.map(function(x) {
+							return x + vertexShift;
+						});
+
+					}
+
+					// backbone settings number of nodes to tour
+					function selectTourListenHack() {
+						if(!(input1.value() < 3)){
+							resetTour();
+							thinking = true;
+							redrawing();
+							counterLoader = 0;
+							loading();
+
+							selectTourSize = input1.value();
+							randomNum = getRandomInt()
+							if(sel1.value() == 'Default'){
+								submitBBParamAndGenerateNewTours(0, selectTourSize, randomNum);
+							}else{
+								submitBBParamAndGenerateNewTours(sel1.value(), selectTourSize, randomNum);
+							}
+						}else{
+							alert('Input a value larger than 2!')
+						}
+					}
+
+					// backbone settings backbone lengths
+					function selectListenHack() {
+						if (sel1.value() != selectString) {
+							resetTour();
+							thinking = true;
+							redrawing();
+							counterLoader = 0;
+							loading();
+							selectString = sel1.value();
+							submitBBParam(selectString, input1.value());
+
+						}
+					}
+
+					randomNum = 0;
+
+					//Changes parameters to the Backbone
+					function submitBBParamAndGenerateNewTours(BBLen, tourSize, ranNum) {
+						$.ajax({
+							url: 'tour/',
+							method: 'GET',
+							dataType: 'json',
+							data: {
+								'backboneLen': BBLen,
+								'numCities': tourSize,
+								'newInstance': ranNum,
+							},
+							success: function(data) {
+								tour = data.tour;
+								tourlenBB = data.tourBBLen;
+								var output = document.getElementById('bbd1');
+								output.innerHTML = data.bbData;
+								counterLoader += 1;
+								thinking = false;
+								redrawing();
+								backbone2 = data.backbones;
+
+
+								input1.remove()
+								input1 = createInput(data.numTours);
+								input1.size(60, 25);
+								input1.parent('input1')
+
+							},
+							error: function(ex) {
+								alert('no tour!')
+							}
+						});
+					}
+
+					//Changes parameters to the Backbone
+					function submitBBParam(BBLen, tourSize) {
+						$.ajax({
+							url: 'tour/',
+							method: 'GET',
+							dataType: 'json',
+							data: {
+								'backboneLen': BBLen,
+								'numCities': tourSize,
+								'newInstance': randomNum,
+							},
+							success: function(data) {
+								tour = data.tour;
+								tourlenBB = data.tourBBLen;
+								var output = document.getElementById('bbd1');
+								output.innerHTML = data.bbData;
+								counterLoader += 1;
+								thinking = false;
+								redrawing();
+
+								backbone2 = data.backbones;
+
+							},
+							error: function(ex) {
+								alert('no tour!')
+							}
+						});
+					}
+
+					function startingPos(box, val1, val2) {
+						box.position.x = val1;
+						box.position.y = val2;
+						tmp9 = [0, 0, 0, 0];
+						tmp10 = [0, 0, 0, 0];
+						drawSprites();
+					}
+
+					function resetTour() {
+						for (let j = 0; j < uNodes.length; j++) {
+							nodes[uNodes[j][2]].col = color(255, 100);
+							nodes[uNodes[j][2]].toggle = false;
+						}
+						uNodesTour = []
+						uNodes = []
+						reset = true;
+						startingPositons = false;
+						startingPositons2 = false;
+						wait1 = false;
+						wait2 = false;
+						waitLone = true;
+						timer1 = false;
+						timer2 = false;
+
+						at1 = 0;
+						at2 = 0;
+						bt1 = 0;
+						bt2 = 0;
+
+						var output = document.getElementById('userPath');
+						output.innerHTML = ' '
+
+						var tmp = document.getElementById('percentage');
+						tmp.innerHTML = " ";
+
+						currentTitle = null;
+						var tmp = document.getElementById('tourinfo');
+						tmp.value = " ";
+
+						var output3 = document.getElementById('bbd2');
+						output3.innerHTML = ""
+
+						var output4 = document.getElementById('totalDist');
+						output4.innerHTML = ""
+
+						userLength = 0;
+
+						finished1 = false;
+						finished2 = false;
+						start1 = false;
+						start2 = false;
+
+						announce = false;
+
+						timerFig1.remove();
+						timerFig1 = createP("Asterisk: 0s")
+						timerFig1.position(900, 20)
+						timerFig1.parent('row');
+						timerFig1.style('width', '200px');
+						timerFig1.style('color: white; font-size: 20px')
+
+						timerFig2.remove();
+						timerFig2 = createP("Blob: 0s")
+						timerFig2.position(900, 50);
+						timerFig2.parent('row');
+						timerFig2.style('width', '200px');
+						timerFig2.style('color: white; font-size: 20px')
+						time1Tracker = 0
+						time2Tracker = 0
+
+						raceResult = "Asterisk and Block are ready to race... ";
+						resultA = null;
+						resultB = null;
+						raceWinner.remove();
+						raceWinner = createP(raceResult);
+						raceWinner.position(800, 750);
+						raceWinner.parent('row')
+						raceWinner.style('width', '500px');
+						raceWinner.style('color: white; font-size: 20px');
+
+						// remove the Key value on custom tours
+						if (cTour) {
+							for (let i = 0; i < textArr.length; i++) {
+								textArr[i].remove();
+							}
+							cTour.remove();
+						}
+					}
+
+					function plotUserTour() {
+						noFill();
+						stroke(255);
+						strokeWeight(2);
+						beginShape();
+						for (let i = 0; i < uNodes.length; i++) {
+							vertex(uNodes[i][0], uNodes[i][1]);
+						}
+
+						if (uNodes.length == nodes.length) {
+							vertex(uNodes[0][0], uNodes[0][1])
+						}
+						endShape();
+					}
+
+					function plotBBTour() {
+						//plot tour
+						stroke(255);
+						strokeWeight(1);
+						noFill();
+						beginShape();
+						for (let i = 0; i < tourVShifted.length / 2; i++) {
+							vertex(tourVShifted[i * 2], tourVShifted[i * 2 + 1]);
+						}
+						vertex(tourVShifted[0], tourVShifted[1]);
+						endShape();
+
+					}
+
+					startingPositons = false;
+					startingPositons2 = false;
+
+					function moveToStart() {
+						startingPositons = true;
+						startingPositons2 = true;
+					}
+
+					wait1 = false;
+					wait2 = false;
+					waitLone = true;
+					var at1, at2, bt1, bt2, resultA, resultB;
+					var timer1 = false;
+					var timer2 = false;
+					var finished1 = false;
+					var finished2 = false;
+					var start1 = false;
+					var start2 = false;
+
+					// not reuseable - for neater code
+					function race(box, tourVShiftedd) {
+
+						// move from current position to starting position
+						if (startingPositons == true) {
+							if (uNodesTour.length / 2 == tour.length / 2) {
+								raceResult = "Asterisk and Blob are on the tracks ... "
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							} else {
+								raceResult = "Asterisk is on the tracks ... "
+								raceWinner.remove();
+								raceWinner = createP(raceResult);
+								raceWinner.position(800, 750);
+								raceWinner.parent('row');
+								raceWinner.style('width', '500px');
+								raceWinner.style('color: white; font-size: 20px')
+							}
+							targetX = tourVShiftedd[0];
+							targetY = tourVShiftedd[1];
+							tmp9 = followPath([box.position.x, box.position.y],
+								[targetX, targetY],
+								speedSlider.value(),
+								0);
+
+							startingPositons = false;
+							start1 = true;
+						}
+
+						if (finished1) {
+							if (1 > dist(box.position.x, box.position.y, targetX, targetY)) {
+								tmp9 = [0, 0, 0, 0];
+								if (timer1) {
+									at2 = new Date().getTime();
+									resultA = (at2 - at1) / 1000;
+									timer1 = false;
+								}
+							} else {
+								tmp9 = followPath([box.position.x, box.position.y],
+									[targetX, targetY],
+									speedSlider.value(),
+									0);
+							}
+						} else {
+							//path following animation, implementation of following  the default tour
+							for (let i = 0; i < tour.length / 2 - 1; i++) {
+								//from end to begining
+								if (targetX == tourVShiftedd[tourVShiftedd.length - 2] &&
+									targetY == tourVShiftedd[tourVShiftedd.length - 1] &&
+									1 > dist(box.position.x, box.position.y,
+										targetX, targetY)) {
+
+
+									targetY = tourVShiftedd[1];
+									targetX = tourVShiftedd[0];
+									tmp9 = followPath([box.position.x, box.position.y],
+										[targetX, targetY],
+										speedSlider.value(),
+										0);
+									if (start1) {
+										finished1 = true;
+									}
+								} else if (1 > dist(box.position.x, box.position.y, targetX, targetY) &&
+									tmp9[2] == i) {
+									if (!waitLone) {
+										wait1 = true;
+									}
+									if (waitLone || (wait1 && wait2)) {
+										if (timer1 == false) {
+											at1 = new Date().getTime();
+											timer1 = true;
+										}
+										tmp9 = followPath([box.position.x, box.position.y],
+											[tourVShiftedd[(i * 2) + 2], tourVShiftedd[(i * 2) + 3]],
+											speedSlider.value(),
+											i + 1);
+
+										targetY = tourVShiftedd[i * 2 + 3];
+										targetX = tourVShiftedd[i * 2 + 2];
+										break;
+									} else {
+										tmp9 = followPath([box.position.x, box.position.y],
+											[targetX, targetY],
+											speedSlider.value(),
+											0);
+									}
+								}
+							}
+						}
+
+						if (tmp9[3] >= 1) {
+							box.position.x = box.position.x + tmp9[0];
+							box.position.y = box.position.y + tmp9[1];
+							tmp9[3] = tmp9[3] - 1;
+							drawSprites();
+						} else {
+							// keeps the spirit from moving after it goes to the goal node
+							if (tmp9[3] <= 0) {
+								tmp9 = [0, 0, 0, 0]
+							}
+							// movement relative to the path not the object
+							box.position.x = box.position.x + (tmp9[0] * tmp9[3]);
+							box.position.y = box.position.y + (tmp9[1] * tmp9[3]);
+							drawSprites();
+						}
+					}
+
+					//not reuseable for neater code.
+					function raceDe(box, tourVShiftedd) {
+						// move from current position to starting position
+						if (startingPositons2 == true) {
+							bt1 = new Date().getTime();
+							targetXDe = tourVShiftedd[0];
+							targetYDe = tourVShiftedd[1];
+							tmp10 = followPath([box.position.x, box.position.y],
+								[targetXDe, targetYDe],
+								speedSlider2.value(),
+								0);
+							start2 = true;
+							startingPositons2 = false;
+						}
+
+
+						if (finished2) {
+							if (1 > dist(box.position.x, box.position.y, targetXDe, targetYDe)) {
+								tmp10 = [0, 0, 0, 0];
+								if (timer2) {
+									bt2 = new Date().getTime();
+									resultB = (bt2 - bt1) / 1000;
+									timer2 = false;
+								}
+							} else {
+								targetXDe = tourVShiftedd[0];
+								targetYDe = tourVShiftedd[1];
+								tmp10 = followPath([box.position.x, box.position.y],
+									[targetXDe, targetYDe],
+									speedSlider2.value(),
+									0);
+							}
+						} else {
+							//path following animation, implementation of following  the default tour
+							for (let i = 0; i < tour.length / 2 - 1; i++) {
+								//from end to beginingd
+								if (targetXDe == tourVShiftedd[tourVShiftedd.length - 2] &&
+									targetYDe == tourVShiftedd[tourVShiftedd.length - 1] &&
+									1 > dist(box.position.x, box.position.y, targetXDe, targetYDe)) {
+
+									targetYDe = tourVShiftedd[1];
+									targetXDe = tourVShiftedd[0];
+									tmp10 = followPath([box.position.x, box.position.y],
+										[targetXDe, targetYDe],
+										speedSlider2.value(),
+										0);
+									timer2 = true;
+									if (start2) {
+										finished2 = true;
+									}
+								} else if (1 > dist(box.position.x, box.position.y, targetXDe, targetYDe) &&
+									tmp10[2] == i) {
+									if (!waitLone) {
+										wait2 = true;
+									}
+									if (wait1 && wait2) {
+										if (timer2 == false) {
+											bt1 = new Date().getTime();
+											timer2 = true;
+										}
+										tmp10 = followPath([box.position.x, box.position.y],
+											[tourVShiftedd[(i * 2) + 2], tourVShiftedd[(i * 2) + 3]],
+											speedSlider2.value(),
+											i + 1);
+
+										targetYDe = tourVShiftedd[i * 2 + 3];
+										targetXDe = tourVShiftedd[i * 2 + 2];
+										valtempX = tmp10[0];
+										valtempY = tmp10[1];
+										break;
+									} else {
+										tmp10 = followPath([box.position.x, box.position.y],
+											[targetXDe, targetYDe],
+											speedSlider2.value(),
+											0);
+									}
+								}
+							}
+						}
+
+						if (tmp10[3] >= 1) {
+							box.position.x = box.position.x + tmp10[0];
+							box.position.y = box.position.y + tmp10[1];
+							tmp10[3] = tmp10[3] - 1;
+							drawSprites();
+						} else {
+							if (tmp10[3] == 0) {
+								tmp10 = [0, 0, 0, 0]
+							}
+							// movement relative to the path not the object
+							box.position.x = box.position.x + tmp10[0] * tmp10[3];
+							box.position.y = box.position.y + tmp10[1] * tmp10[3];
+							tmp10[3] = 0;
+							drawSprites();
+							if (timer2 == true &&
+								box.position.x == targetXDe &&
+								targetYDe == box.position.y) {
+
+								bt2 = new Date().getTime();
+							}
+						}
+					}
+
+					function followPath(point1, point2, speed, i) {
+						// returns the direction and speed the item should be moving at
+						// point 2 is the final destination
+
+						if (speed < 5) {
+							speed = 5 / 20
+						} else {
+							speed = speed / 20;
+						}
+
+						var adjacent = abs(point2[0] - point1[0]);
+						var opposite = abs(point2[1] - point1[1]);
+						var hypo = Math.sqrt(Math.pow(adjacent, 2) + Math.pow(opposite, 2));
+						var x;
+						var y;
+						var n;
+						var angle = Math.atan(opposite / adjacent);
+
+						x = Math.cos(angle) * speed;
+						y = Math.sin(angle) * speed;
+
+						if ((point2[0] - point1[0]) < 0) {
+							x = x * -1;
+						}
+						if ((point2[1] - point1[1]) < 0) {
+							y = y * -1;
+						}
+
+
+						n = hypo / speed
+
+						return [x, y, i, n];
+					}
+
+					//random tours
+					generate = 0;
+
+					function getRandomInt(max) {
+						return Math.random();
+					}
+
+					var table = document.createElement('table');
+					table.style.border = "medium solid #000000";
+					table.border = "1"
+					var tableData
+					// write a html document to get data from the database
+					$.ajax({
+						url: 'hiscore/',
+						method: 'GET',
+						dataType: 'json',
+						success: function(data) {
+							tableData = data.queryset
+
+							var tr = document.createElement('tr');
+
+							var th1 = document.createElement('th');
+							var th2 = document.createElement('th');
+							var th3 = document.createElement('th');
+							var th4 = document.createElement('th');
+							var th5 = document.createElement('th');
+							var th6 = document.createElement('th');
+							var th7 = document.createElement('th');
+
+							th1.style.border = "thick solid #000000";
+							th2.style.border = "thick solid #000000";
+							th3.style.border = "thick solid #000000";
+							th4.style.border = "thick solid #000000";
+							th5.style.border = "thick solid #000000";
+							th6.style.border = "thick solid #000000";
+							th7.style.border = "thick solid #000000";
+
+							var text1 = document.createTextNode('id');
+							var text2 = document.createTextNode('Name');
+							var text3 = document.createTextNode('Tour Problem');
+							var text4 = document.createTextNode('User Solution');
+							var text5 = document.createTextNode('Algorithm');
+							var text6 = document.createTextNode('Algorithm Solution');
+							var text7 = document.createTextNode('Date Submission');
+
+							th1.appendChild(text1);
+							th2.appendChild(text2);
+							th3.appendChild(text3);
+							th4.appendChild(text4);
+							th5.appendChild(text5);
+							th6.appendChild(text6);
+							th7.appendChild(text7);
+
+							tr.appendChild(th1);
+							tr.appendChild(th2);
+							tr.appendChild(th3);
+							tr.appendChild(th4);
+							tr.appendChild(th5);
+							tr.appendChild(th6);
+							tr.appendChild(th7);
+
+							table.appendChild(tr)
+
+							for (var i = 0; i < data.queryset.length; i++) {
+								var tr = document.createElement('tr');
+
+								var td1 = document.createElement('td');
+								var td2 = document.createElement('td');
+								var td3 = document.createElement('td');
+								var td4 = document.createElement('td');
+								var td5 = document.createElement('td');
+								var td6 = document.createElement('td');
+								var td7 = document.createElement('td');
+
+								var text1 = document.createTextNode(tableData[i][0]);
+								var text2 = document.createTextNode(tableData[i][1]);
+								var text3 = document.createTextNode(tableData[i][2]);
+								// tableData 3 is the user tour and can be seen on hover
+								var text4 = document.createTextNode(tableData[i][4]);
+								var text5 = document.createTextNode(tableData[i][5]);
+								var text6 = document.createTextNode(tableData[i][6]);
+								var text7 = document.createTextNode(tableData[i][7]);
+
+								var custom = document.createTextNode(tableData[i][8] +
+									" Node Problem");
+
+								td1.appendChild(text1);
+								td2.appendChild(text2);
+								td3.appendChild(custom);
+								td3.classList.add("mystyle");
+								td3.title = tableData[i][2]
+								td3.addEventListener('click', function() {
+									var tmp = document.getElementById('tourinfo');
+									tmp.value = this.title;
+									currentTitle = this.title;
+								});
+
+								td4.appendChild(text4);
+								td4.classList.add("mystyle");
+								td4.title = tableData[i][3]
+
+								td5.appendChild(text5);
+								td6.appendChild(text6);
+								td6.classList.add("mystyle");
+								td6.title = tableData[i][2]
+
+								td7.appendChild(text7);
+
+								tr.appendChild(td1);
+								tr.appendChild(td2);
+								tr.appendChild(td3);
+								tr.appendChild(td4);
+								tr.appendChild(td5);
+								tr.appendChild(td6);
+								tr.appendChild(td7);
+
+								table.appendChild(tr)
+							}
+							var bbTable = document.getElementById('tableBBSubmissions')
+							bbTable.appendChild(table)
+
+
+						},
+					});
+
+					// holds the current table value
+					var currentTitle;
+
+					function initialiseTableTour() {
+						if (currentTitle) {
+							tmpTour = currentTitle.slice(1, currentTitle.length - 1)
+							reg = /(\d+.\d+)|(\d+)/g
+							tmpTour = tmpTour.match(reg)
+
+							resetTour();
+							thinking = true;
+							redrawing();
+							counterLoader = 0;
+							loading();
+
+							for (let i = 0; i < tmpTour.length / 3; i++) {
+								tour.push(tmpTour[i * 3], tmpTour[(i * 3) + 1])
+							}
+
+							window.scrollTo({
+								top: 0,
+								behavior: 'smooth'
+							});
+							drawTableTSP()
+						} else {
+							alert('Select a Tour Problem!');
+						}
+					}
+
+					var userLength = 0
+
+					$(document).ready(function() {
+						$('#calcTour').click(function(event) {
+							$.ajax({
+								url: 'userTour/',
+								method: 'GET',
+								dataType: 'json',
+								data: {
+									'pathLen': nodes.length,
+									'tourVal': tour.toString(),
+									'tourKey': document.getElementById("userPath").innerHTML,
+									'tourBBLen': tourlenBB,
+								},
+								success: function(data) {
+									var output = document.getElementById('totalDist');
+									output.innerHTML = data.tourlen
+
+									userLength = data.tourlen
+
+									var output2 = document.getElementById('bbd2');
+									output2.innerHTML = data.ratio
+								},
+								error: function(ex) {
+									alert('User Submitted Invalid Tour!')
+								},
+							});
+						});
+
+						$('#resetter').click(function(event) {
+							var output3 = document.getElementById('bbd2');
+							output3.innerHTML = ""
+
+							var output4 = document.getElementById('totalDist');
+							output4.innerHTML = ""
+
+							return false;
+						});
+
+						$('#hiscore').click(function(event) {
+							// write an ajax call to submit data to the database
+							$.ajax({
+								url: 'subhiscore/',
+								method: 'GET',
+								dataType: 'json',
+								data: {
+									// user tour order
+									'tourKey': document.getElementById("userPath").innerHTML,
+									//user tour length
+									'usrLen': userLength.toString(),
+									// tour length of bb
+									'tourBBLen': tourlenBB,
+									// algorithm tour
+									'bbTour': tour.toString(),
+									// TSP instance
+									'tsp': tour.toString(),
+									// length of user tour
+									'pathLen': uNodes.length,
+									// number of nodeSize
+									'input1': input1.value()
+
+								},
+								success: function(data) {
+									alert('Tour submitted to Hiscore successfuly.')
+								},
+								error: function(data) {
+									alert("Log in and then select " + input1.value() +
+										" nodes and Calculate before submitting.")
+								},
+							});
+						});
+
+						$(function() {
+							$('[data-toggle="tooltip"]').tooltip()
+						})
+					});
+
+					//google maps feature
+					var place, infowindow, marker;
+					var placeLibrary = {};
+					var addressCur;
+					var customTSP = []
+					var customTSPNorm = []
+					var centralLocation
+
+					function initMap() {
+						var map = new google.maps.Map(document.getElementById('maps'), {
+							center: {
+								lat: -30.9097,
+								lng: 150.644
+							},
+							zoom: 8,
+						});
+						map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('search'));
+						var searchbar = new google.maps.places.Autocomplete(document.getElementById('search'))
+						searchbar.bindTo('bounds', map)
+
+						infowindow = new google.maps.InfoWindow();
+						marker = new google.maps.Marker({
+							map: map,
+							anchorPoint: new google.maps.Point(0, -29)
+						});
+
+						searchbar.addListener('place_changed', function() {
+							infowindow.close();
+							marker.setVisible(false);
+
+							// if there is a change in serachbar we check the object, else return
+							place = searchbar.getPlace();
+							if (!place.geometry) {
+								window.alert("Autocomplete's returned place contains no geometry");
+								return;
+							}
+
+							// If the place has a geometry and then viewport else a loction
+							// it will have either if there is a geometry
+							if (place.geometry.viewport) {
+								map.fitBounds(place.geometry.viewport);
+							} else {
+								map.setCenter(place.geometry.location);
+								map.setZoom(17);
+							}
+
+							//putting a marker down, can put multiple
+							marker.setIcon(({
+								url: place.icon,
+								size: new google.maps.Size(71, 71),
+								origin: new google.maps.Point(0, 0),
+								anchor: new google.maps.Point(17, 34),
+								scaledSize: new google.maps.Size(35, 35)
+							}));
+							marker.setPosition(place.geometry.location);
+							marker.setVisible(true);
+
+							//getting the address information
+							var address = '';
+							if (place.address_components) {
+								address = [
+									(place.address_components[0] && place.address_components[0].short_name || ''),
+									(place.address_components[1] && place.address_components[1].short_name || ''),
+									(place.address_components[2] && place.address_components[2].short_name || '')
+								].join(' ');
+							}
+
+							infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+							infowindow.open(map, marker);
+
+							//Location details, address components is the broken address
+							for (var i = 0; i < place.address_components.length; i++) {
+								if (place.address_components[i].types[0] == 'postal_code') {
+									document.getElementById('postal_code').innerHTML = place.address_components[i].long_name;
+								}
+								if (place.address_components[i].types[0] == 'country') {
+									document.getElementById('country').innerHTML = place.address_components[i].long_name;
+								}
+							}
+							// get the address
+							document.getElementById('location').innerHTML = place.formatted_address;
+							// get the Latitude
+							document.getElementById('lat').innerHTML = place.geometry.location.lat();
+							// get the longitude
+							document.getElementById('lon').innerHTML = place.geometry.location.lng();
+						});
+					}
+
+					var sessionCounter = 0
+
+					function addCTSP(place) {
+						sessionCounter += 1;
+
+						if (sessionCounter == 1) {
+							// Try HTML5 geolocation.
+							if (navigator.geolocation) {
+								navigator.geolocation.getCurrentPosition(function(position) {
+									var pos = {
+										lat: position.coords.latitude,
+										lng: position.coords.longitude
+									};
+
+									// infowindow.setPosition(pos);
+									// infowindow.setContent('Location found.');
+									// do something with the positons
+
+									centralLocation = pos
+
+								}, function() {
+									handleLocationError(true, infowindow, map.getCenter());
+								});
+							} else {
+								// Browser doesn't support Geolocation
+								handleLocationError(false, infowindow, map.getCenter());
+							}
+						}
+
+						lat = place.geometry.location.lat();
+						lng = place.geometry.location.lng();
+						address = place.formatted_address;
+
+						for (let i = 0; i < customTSP.length; i++) {
+							if (customTSP[i][2] == address) {
+								return
+							}
+						}
+						// checks if there is already a place in the placeLibrary
+						if (!placeLibrary.address) {
+							placeLibrary.address = {
+								lat: lat,
+								lng: lng,
+								place: place
+							}
+						}
+
+						// you can have a place in the library but not in the array
+						// if place is in the array it won't get to this point as we are returned
+						if (place) {
+							customTSP.push([lat, lng, address]);
+						}
+
+						// generate a dom element
+						var li = document.createElement("li");
+						var butn = document.createElement("button");
+						butn.innerHTML = address;
+						butn.classList.add("list-group-item", "list-group-item-action");
+						butn.addEventListener("click", function() {
+							addressCur = this.innerHTML;
+							// alert("Hello World!");
+						});
+						li.appendChild(butn)
+						listElem = document.getElementById('userTSP')
+						listElem.prepend(li)
+					}
+
+					function removeCTSP(place) {
+						// lat = place.geometry.location.lat();
+						// lng = place.geometry.location.lng();
+						// address = place.formatted_address;
+						listElem = document.getElementById('userTSP')
+
+						for (let i = 0; i < customTSP.length; i++) {
+							if (customTSP[i][2] == addressCur) {
+								customTSP.splice(i, 1);
+								listElem.children[i].remove();
+							}
+						}
+					}
+
+					function drawCTSP() {
+						$.ajax({
+							url: 'googletour/',
+							method: 'GET',
+							dataType: 'json',
+							data: {
+								'tourl': tour.toString(),
+							},
+							success: function(data) {
+								tour = data.tour;
+								tourlenBB = data.tourBBLen;
+								var output = document.getElementById('bbd1');
+								output.innerHTML = data.bbData;
+
+								// re initialise input1
+								input1.remove()
+								input1 = createInput(data.lentour);
+								input1.size(60, 25);
+								input1.parent('input1')
+
+
+								counterLoader += 1;
+								thinking = false;
+								redrawing();
+								backbone2 = data.backbones;
+
+								cTour = createElement("ul");
+								cTour.position(1000, 500);
+
+								for (let i = 0; i < tour.length / 2; i++) {
+									tmp = tour[i * 2]
+									tmp2 = tour[i * 2 + 1]
+									for (let j = 0; j < tour.length / 2; j++) {
+										if (tmp == tourOrder[j][1] &&
+											tmp2 == tourOrder[j][2]) {
+											// make an object and append to a li
+											// console.log(i, tmp, tmp2, tourOrder[j][0]);
+											var cTourElem = document.createElement("li");
+											var text = document.createTextNode(i + ' ' + tourOrder[j][0]);
+											cTourElem.appendChild(text);
+											cTour.child(cTourElem);
+											textArr.push(text)
+										}
+									}
+								}
+
+							},
+							error: function(ex) {
+								alert('no tour!')
+							}
+						});
+					}
+
+					var textArr = []
+
+					function drawTableTSP() {
+						$.ajax({
+							url: 'googletour/',
+							method: 'GET',
+							dataType: 'json',
+							data: {
+								'tourl': tour.toString(),
+							},
+							success: function(data) {
+								tour = data.tour;
+								tourlenBB = data.tourBBLen;
+								var output = document.getElementById('bbd1');
+								output.innerHTML = data.bbData;
+
+								// re initialise input1
+								input1.remove()
+								input1 = createInput(data.lentour);
+								input1.size(60, 25);
+								input1.parent('input1')
+
+
+								counterLoader += 1;
+								thinking = false;
+								redrawing();
+								backbone2 = data.backbones;
+
+							},
+							error: function(ex) {
+								alert('no tour!')
+							}
+						});
+					}
+
+					function submitCTSP() {
+						if (centralLocation) {
+							if (customTSP.length > 2) {
+								var temp = []
+								var temp2 = []
+								customTSPNorm = []
+								tourOrder = []
+
+								for (let i = 0; i < customTSP.length; i++) {
+									var distT = distanceLL(centralLocation.lng, centralLocation.lat,
+										customTSP[i][1], customTSP[i][0]);
+									var bearT = calcBear(centralLocation.lng, centralLocation.lat,
+										customTSP[i][1], customTSP[i][0]);
+
+									temp.push([distT, bearT]);
+									temp2.push([distT])
+								}
+
+								for (let i = 0; i < temp.length; i++) {
+									customTSPNorm.push([(temp2[i] - Math.min.apply(null, temp2)) / (Math.max.apply(null, temp2) - Math.min.apply(null, temp2)),
+										temp[i][1]
+									]);
+								}
+
+								resetTour();
+								thinking = true;
+								redrawing();
+								counterLoader = 0;
+								loading();
+
+								// apply normalisation to the 'tour'
+								for (let i = 0; i < customTSPNorm.length; i++) {
+									a = 500;
+									b = 300;
+									angle = 0
+
+
+									if (customTSPNorm[i][1] > 0 && customTSPNorm[i][1] <= 90) {
+										b = -1;
+										a = 1
+										angle = toRadians(90 - customTSPNorm[i][1])
+									} else if (customTSPNorm[i][1] > 90 && customTSPNorm[i][1] <= 180) {
+										a = 1
+										b = 1
+										angle = toRadians(customTSPNorm[i][1] - 90)
+									} else if (customTSPNorm[i][1] > 180 && customTSPNorm[i][1] <= 270) {
+										a = -1;
+										b = 1
+										angle = toRadians(90 - (customTSPNorm[i][1] - 180))
+									} else {
+										a = -1;
+										b = -1;
+										angle = toRadians(customTSPNorm[i][1] - 270)
+									}
+									tour.push(((customTSPNorm[i][0] * Math.cos(angle)) * 500 * a + 500), ((customTSPNorm[i][0] * Math.sin(angle)) * 300 * b + 300));
+									tourOrder.push([customTSP[i][2], ((customTSPNorm[i][0] * Math.cos(angle)) * 500 * a + 500), ((customTSPNorm[i][0] * Math.sin(angle)) * 300 * b + 300)]);
+								}
+								window.scrollTo({
+									top: 0,
+									behavior: 'smooth'
+								});
+								drawCTSP(tour);
+
+							} else {
+								alert('Select more than two locations.')
+							}
+						}
+					}
+
+					var tourOrder = []
+					// may beed to clear on reset
+					var cTour
+
+
+					function distanceLL(lng1, lat1, lng2, lat2) {
+						var R = 6371000;
+						var phi1 = toRadians(lat1);
+						var phi2 = toRadians(lat2);
+						var deltaPhi = toRadians((lat2 - lat1));
+						var lamda = toRadians((lng2 - lng1));
+
+						var a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+							Math.cos(phi1) * Math.cos(phi2) *
+							Math.sin(lamda / 2) * Math.sin(lamda / 2);
+
+						var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+						return R * c
+					}
+
+					function calcBear(lng1, lat1, lng2, lat2) {
+						var phi1 = toRadians(lat1);
+						var phi2 = toRadians(lat2);
+						var lamda1 = toRadians(lng1);
+						var lamda2 = toRadians(lng2);
+
+						var x = Math.sin(lamda2 - lamda1) * Math.cos(phi2);
+						var y = Math.cos(phi1) * Math.sin(phi2) -
+							Math.sin(phi1) * Math.cos(phi2) *
+							Math.cos(lamda2 - lamda1);
+
+						return (450 - ((toDegrees(Math.atan2(y, x)) + 360) % 360)) % 360;
+					}
+
+					function toRadians(deg) {
+						return deg * Math.PI / 180
+					}
+
+					function toDegrees(rad) {
+						return rad * 180 / Math.PI
+					}
+
+					function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+						infoWindow.setPosition(pos);
+						infoWindow.setContent(browserHasGeolocation ?
+							'Error: The Geolocation service failed.' :
+							'Error: Your browser doesn\'t support geolocation.');
+						infoWindow.open(map);
+					}
+				</script>
+			</div>
+		</div>
+
+	</div>
+	<div class="container" style="max-width: 100%;">
+		<div class="container" style="max-width: 100%;">
+			<!-- cards -->
+			<div class="row" style="max-width: 90%; margin: 0 auto">
+				<div class="col-lg-4">
+					<div class="card text-white bg-info text-center" style="height: 100%">
+						<div class="card-header">
+							<h5> Make Your Own Tour! </h5>
+						</div>
+						<div class="card-body">
+							<h5> Description <i class="fas fa-info-circle"></i></h5>
+							<p class="text-white m-0 mystyle" data-toggle="tooltip" data-placement="top" title="Click any node to start the tour.">
+								Click the nodes
+								in the map window in the order you would
+								like to visit. Once all points have
+								been selected you can get an analysis
+								and then submit the tour to the
+								Hi-score table.</p>
+
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4 ">
+					<div class="card text-white bg-info text-center" style="height: 100%">
+						<div class="card-header">
+							<h5> Tune the Backbone! </h5>
+						</div>
+						<div class="card-body">
+							<h5> Description <i class="fas fa-info-circle"></i></h5>
+							<p class="text-white m-0 mystyle" data-toggle="tooltip" data-placement="top" title="You can only change one parameter, at a time. The graph will change, if
+												 there is a better tour. Else, you can get a new problem to solve.">
+								Adjust the backbone parameters
+								to see what effect it has on the
+								graph. It is possible to tune the
+								parameters to get a slightly
+								better graph.</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<div class="card text-white bg-info text-center" style="height: 100%">
+						<div class="card-header">
+							<h5> Adjust Your Speed! </h5>
+						</div>
+						<div class="card-body">
+							<h5> Description <i class="fas fa-info-circle"></i></h5>
+							<p class="text-white m-0 mystyle" data-toggle="tooltip" data-placement="top" title="You can reset the application by pressing the Reset button.">
+								Once you have completed a tour, you will be
+								able to race the two figures. The Asterisk will
+								follow your path, and the Blob follows the algorithm
+								path.</p>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
+		<div class="container" style="max-width: 100%">
+			<div class="row" style="max-width: 90%; margin: 0 auto; height: 360px">
+				<div class="col-lg-4">
+					<div class="card text-white bg-success my-0 text-center" style="height: 100%">
+						<div class="card-header">
+							<h5>Data Window</h5>
+						</div>
+						<div class="card-body" style="width: 100%">
+							<p>
+								<div class="col-sm-12" id="userPath" style="font-size:12; height:30px; overflow-y: scroll;"></div>
+							
+							<p>
+								<div class="col-sm-12" id="totalDist" style="font-size:12; height:20px"></div>
+							</p>
+							<!-- <p>distance of the users tour goes here</p> -->
+							<p>
+								<div id="bbd2"></div>
+							</p>
+							<p>
+								<div id="bbd3"></div>
+							</p>
+							<p>
+								<div class="col-sm-12" id="percentage" style="font-size:12px; height:20px"></div>
+							</p>
+							<!--calculating data and submitting to tour-->
+							<div class="col-sm-12 row" style="width:100%; margin: 0 auto">
+								<form class="col-sm-8 row" id="calcTour" style="padding:25px">
+									<input type="button" class="btn btn-primary" value="Calculate"> </input> 
+								</form> 
+								<form class="col-sm-4 row" id="hiscore" style="padding:25px">
+									<input type="button" class="btn btn-primary" value="Submit to Hiscore"></input>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<div class="card text-white bg-success text-center" style="height: 100%">
+						<div class="card-header">
+							<h5>Backbone Settings<h5>
+						</div>
+						<div class="card-body">
+							<p>
+								<div id="bbd1"></div>
+							</p>
+							<div class="row">
+								<div class="row my-3" style="margin: 0 auto">
+									<p class="my-2 mx-3">Number of Nodes to Tour:</p>
+									<p>
+										<div class="my-2" id="input1"></div>
+									</p>
+									<p>
+										<div id="but3"></div>
+									</p>
+								</div>
+							</div>
+							<div class="row">
+								<div class="row" style="margin: 0 auto">
+									<p class="mx-3">Backbone Lengths Less Than:</p>
+									<p>
+										<div id="sel1"></div>
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<div class="card text-white bg-success text-center" style="height: 100%">
+						<div class="card-header">
+							<h5>Speed Settings</h5>
+						</div>
+						<div class="card-body">
+							<h3>Settings</h3>
+							<div class="row">
+								<div class="row" style="margin: 0px auto">
+									<a class="my-3"">Speed Asterisk</a>
+								<div class=" mx-3 my-3" id="speed"></div>
+								<div class="my-3" id="speedVal"></div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="row" style="margin: 0px auto">
+								<a class="my-3"">Speed Green Blob</a>
+								<div class=" mx-3 my-3" id="speed2"></div>
+							<div class="my-3" id="speedVal2"></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="row" style="margin: 0px auto">
+							<div id="but1"></div>
+							<form id="resetter">
+								<div id="but2"></div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	</div>
+	</div>
+
+	<!-- map interface -->
+	<div class="container" style="max-width:100%; padding-top: 100px">
+		<div class="row" style="width:100%; height:1000px">
+			<h1 class="display-1 mystyle" data-toggle="tooltip" data-placement="bottom" title="Find addresses and add them to the list to make your own TSP." style="margin-left: 275px">Create your own TSP</h1>
+			<input type="text" id='search' class="controls" placeholder="Enter a location"></br>
+			<div id='maps' style="margin: 0 auto"></div>
+		</div>
+		<div class="row" style="width:100%;">
+			<div class="col-sm-3"></div>
+			<ul class="col-sm-3 list-group" id="geoData">
+				<li class="list-group-item">Full Address: </i> <span id="location"></span></li>
+				<li class="list-group-item">Postal Code:<span id="postal_code"></span></li>
+				<li class="list-group-item">Country: </i><span id="country"></span></li>
+				<li class="list-group-item">Latitude: <span id="lat"></span></li>
+				<li class="list-group-item">Longitude: <span id="lon"></span></li>
+			</ul>
+			<div class="col-sm-3 card text-black bg-info text-center">
+				<div class="card-header text-white">
+					<p class="text-white m-0 mystyle" data-toggle="tooltip" data-placement="top" title="Make your own TSP. Search a place and add it to the problem,
+									once you have more than 2 nodes you can apply it onto the TSP window.">
+						World TSP <i class="fas fa-info-circle"></i></p>
+				</div>
+				<div class="card-body">
+					<div class="row" id="userTSPSubmit" style="max-width: 100%; padding-bottom: 20px"></div>
+					<ul class="list-group" id="userTSP" style="height: 150px; border: 1px solid black"></ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- table -->
+	<div class="container" style="max-width: 100%; padding-bottom: 100px">
+		<h1 class="display-1" style="margin-left: 275px; padding-bottom: 20px">Hi-Score Table</h1>
+		<div class="row" style="padding: 15px">
+			<div class="col-sm-3"></div>
+			<textarea class="col-sm-5" id="tourinfo" placeholder="Select a Tour Problem in the Hi-score table." style="margin-left: 30px; padding: 20px"></textarea>
+			<div id="initTBut" style="padding-top: 30px"></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-4"></div>
+			<div class="col-sm-8" id="tableBBSubmissions" style="margin-left: -150px"></div>
+		</div>
+	</div>
+	</div>
+</body>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCV-zSH9eXXGey6JOtyW9SBY1K-Xqo1ZG4&callback=initMap" async defer></script>
+
+{%endblock%}

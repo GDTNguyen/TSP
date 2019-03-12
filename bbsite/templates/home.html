@@ -1,0 +1,37 @@
+<!-- base html is the deault page that gets loaded, other content will just populate this page, if we call home.html
+this will get called first then populate it with home -->
+
+{% load staticfiles %}
+
+<!DOCTYPE html>
+
+<style type="text/css">
+html{
+	height:100%;
+}
+
+body{
+	min-height:100%;
+	padding:0;
+	margin:0;
+	position:relative;
+}
+</style>
+
+<html lang ="en">
+<head>
+	  {% include 'head_css.html' %}
+
+      <style>
+      {% block style %}{% endblock %}
+      </style>
+
+</head>
+
+<body>
+	{% include 'navbar.html' %}
+
+	{% block content %}{% endblock %}
+
+
+</body>
