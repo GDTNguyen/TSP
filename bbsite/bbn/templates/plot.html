@@ -308,7 +308,7 @@
 							but4 = createButton("Add")
 							but4.addClass('btn')
 							but4.addClass('btn-primary')
-							but4.addClass('mx-3')
+							but4.addClass('mx-1')
 							but4.parent('userTSPSubmit')
 							but4.mousePressed(function() {
 								addCTSP(place);
@@ -317,7 +317,7 @@
 							but5 = createButton("Remove")
 							but5.addClass('btn')
 							but5.addClass('btn-primary')
-							but5.addClass('mx-3')
+							but5.addClass('mx-1')
 							but5.parent('userTSPSubmit')
 							but5.mousePressed(function() {
 								removeCTSP(addressCur)
@@ -326,7 +326,7 @@
 							but6 = createButton("Submit cTSP")
 							but6.addClass('btn')
 							but6.addClass('btn-primary')
-							but6.addClass('mx-3')
+							but6.addClass('mx-1')
 							but6.parent('userTSPSubmit')
 							but6.mousePressed(function() {
 								submitCTSP()
@@ -335,10 +335,19 @@
 							but7 = createButton("Initialise Problem")
 							but7.addClass('btn')
 							but7.addClass('btn-primary')
-							but7.addClass('mx-3')
+							but7.addClass('mx-2')
 							but7.parent('initTBut')
 							but7.mousePressed(function() {
 								initialiseTableTour();
+							})
+
+							but8 = createButton("Reset")
+							but8.addClass('btn')
+							but8.addClass('btn-primary')
+							but8.addClass('mx-1')
+							but8.parent('userTSPSubmit')
+							but8.mousePressed(function() {
+								removeCTSP();
 							})
 
 							raceWinner = createP(raceResult);
@@ -1462,7 +1471,7 @@
 						// you can have a place in the library but not in the array
 						// if place is in the array it won't get to this point as we are returned
 						if (place) {
-							customTSP.push([lat, lng, address]);
+							customTSP.unshift([lat, lng, address]);
 						}
 
 						// generate a dom element
@@ -1472,6 +1481,7 @@
 						butn.classList.add("list-group-item", "list-group-item-action");
 						butn.addEventListener("click", function() {
 							addressCur = this.innerHTML;
+							console.log(addressCur)
 							// alert("Hello World!");
 						});
 						li.appendChild(butn)
@@ -1491,6 +1501,7 @@
 								listElem.children[i].remove();
 							}
 						}
+						console.log(customTSP)
 					}
 
 					function drawCTSP() {
@@ -1544,6 +1555,18 @@
 								alert('no tour!')
 							}
 						});
+					}
+
+					function resetCTSP(){
+						resetTour();
+
+						listElem = document.getElementById('userTSP')
+
+						for (let i = 0; i < customTSP.length; i++) {
+							customTSP.splice(i, 1);
+							listElem.children[i].remove();	
+						}
+						
 					}
 
 					var textArr = []
@@ -1895,7 +1918,7 @@
 						World TSP <i class="fas fa-info-circle"></i></p>
 				</div>
 				<div class="card-body">
-					<div class="row" id="userTSPSubmit" style="max-width: 100%; padding-bottom: 20px"></div>
+					<div class="row" id="userTSPSubmit" style="max-width: 100%; padding-bottom: 20px; margin-left: 20px"></div>
 					<ul class="list-group" id="userTSP" style="height: 150px; border: 1px solid black"></ul>
 				</div>
 			</div>
