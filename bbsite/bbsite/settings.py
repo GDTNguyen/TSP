@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['bbsite123321.herokuapp.com', '127.0.0.1']
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'tannguyenww@gmail.com'
 EMAIL_HOST_PASSWORD = 'doomworm123qwe'
-EMAIL_PORT = 587
+EMAIL_PORT = 465
 EMAIL_USE_TLS = True
 
 
