@@ -27,20 +27,21 @@ from django.contrib.sites.models import Site
 from registration.models import RegistrationProfile
 
 
+
 # Create your views here.
 
 def home(request):
-	# context = {}
-	# MYSITE = Site.objects.get_current()
-	# MYSITE.domain = '127.0.0.1:8000'
-	# MYSITE.name = 'My Site'
-	# MYSITE.save()
+	context = {}
+	MYSITE = Site.objects.get_current()
+	MYSITE.domain = '127.0.0.1:8000'
+	MYSITE.name = 'My Site'
+	MYSITE.save()
 
-	# if request.user.is_authenticated():
-	# 	queryset = User.objects.all().order_by('-timestamp')
-	# 	context = {
-	# 		"queryset": queryset,
-	# 	}
+	if request.user.is_authenticated():
+		queryset = User.objects.all().order_by('-timestamp')
+		context = {
+			"queryset": queryset,
+		}
 
 	context = {}
 
@@ -58,8 +59,6 @@ def landingpageTSP(request):
 		'tour': result[0],
 		'backbones': result[3],
 	}
-
-
 	return JsonResponse(context)
 
 # results page
@@ -262,7 +261,7 @@ def register(request):
 			usr = form.save()
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
-		return render(request, 'landingpage.html' , args)
+		return redirect('http://127.0.0.1:8000/', args)
 	else:
 		form = registerForm()
 		args = {'form': form}
