@@ -1481,7 +1481,7 @@
 						butn.classList.add("list-group-item", "list-group-item-action");
 						butn.addEventListener("click", function() {
 							addressCur = this.innerHTML;
-							console.log(addressCur)
+							// console.log(addressCur)
 							// alert("Hello World!");
 						});
 						li.appendChild(butn)
@@ -1559,12 +1559,10 @@
 					function resetCTSP(){
 						resetTour();
 						listElem = document.getElementById('userTSP')
-						console.log(customTSP)
 						for (let i = 0; i < customTSP.length; i++) {
 							listElem.children[0].remove();	
 						}
 						customTSP = []
-						console.log(customTSP)
 					}
 
 					var textArr = []
