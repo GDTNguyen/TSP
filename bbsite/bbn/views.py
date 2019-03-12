@@ -16,6 +16,7 @@ from itertools import permutations
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 
 
@@ -39,8 +40,9 @@ def home(request):
 	return render(request, 'landingpage.html', context)
 
 # landing page
+@csrf_exempt
 def landingpageTSP(request):
-	tsp1 = request.GET.get('tsp1', None)
+	tsp1 = request.POST.get('tsp1', None)
 	tsp1 = tsp1.split(',')
 	tsp1 = map(float, tsp1)
 	result = landingBackbones(tsp1)
