@@ -18,6 +18,13 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
+from .models import scoreboard
+from .forms import registerForm
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from registration.models import RegistrationProfile
 
 
 # Create your views here.
@@ -51,6 +58,8 @@ def landingpageTSP(request):
 		'tour': result[0],
 		'backbones': result[3],
 	}
+
+
 	return JsonResponse(context)
 
 # results page
@@ -67,6 +76,197 @@ def graphOutput(request):
 	context = {}
 
 	return render(request, 'plot.html', context)
+
+
+def getATour(request):
+
+	citiesNum = request.GET.get('numCities', 10)
+	backboneLen = request.GET.get('backboneLen', 0)
+	# Seed can be any number between 0 - 40 even floats
+	newInstance = request.GET.get('newInstance', 0)
+
+	if int(citiesNum) > 1000:
+		print "Instance size of {:} is too large, size set to 1000.".format(citiesNum)
+		citiesNum = 1000
+
+	#this takes a request from the front end and then the response is simple to render the html template
+	try:
+		tourBB = info(Cities(int(citiesNum),
+							 seed=float(newInstance)),
+							 int(backboneLen))
+	except:
+		tourBB = info(Cities(int(citiesNum),
+							 seed=float(newInstance)))
+
+	context = {
+		"tour": tourBB[0],
+		"bbData": tourBB[1],
+		"tourBBLen": tourBB[2],
+		"backbones": tourBB[3],
+		"numTours": citiesNum,
+	}
+	return JsonResponse(context)
+
+def userTour(request):
+	pathLen = request.GET.get('pathLen', None)
+	tourVal = request.GET.get('tourVal', None)
+	tourKey = str((request.GET.get('tourKey', None)))
+	tourBBLen = request.GET.get('tourBBLen', None)
+
+	print pathLen
+	print tourVal
+	print tourKey
+	print tourBBLen
+
+	# convert tour key into list of cities user visited
+	tourKey = tourKey[slice(15, len(tourKey) - 7)].split(',')
+	tourKeyArr = [int(x) for x in tourKey]
+
+	#get the list of cities
+	tourVal = tourVal.split(',')
+	tourVal = map(float, tourVal)
+
+	benchmarkBB(tourVal)
+
+	#define variables for context
+	tour = []
+	tourLen = 0
+	valid = False
+	ratios = " "
+
+	if len(tourKeyArr) == int(pathLen):
+	 	valid = True
+
+	#get the tour
+	for i in tourKeyArr:
+		tour.append(tourVal[i*2])
+		tour.append(tourVal[i*2 + 1])
+
+	#get the tour length
+	if valid == True:
+		tourLen = "Tour distance: {:.2f}".format(calcDist(tour))
+		ratios = ratio(float(tourBBLen), calcDist(tour))
+	else:
+		tourLen = "Invalid Tour of length " + str(len(tourKeyArr))
+
+	context = {
+		"tour": tour,
+		"valid": valid,
+		"tourlen": tourLen,
+		"ratios": ratios,
+	}
+
+	return JsonResponse(context)
+
+def googCTSP(request):
+	tour = request.GET.get('tourl', None)
+	# potential bug is tour is given with [] but it seems to not be here
+	tour = tour.split(',')
+	tourArr = [float(x) for x in tour]
+	tourCities = set()
+
+	for i in range(len(tourArr)/2):
+		tourCities.add(City(tourArr[i*2], tourArr[i*2+1]))
+	
+
+	tourBB = info(tourCities)
+
+	context = {
+		"tour": tourBB[0],
+		"bbData": tourBB[1],
+		"tourBBLen": tourBB[2],
+		"backbones": tourBB[3],
+		"lentour": len(tourArr)/2,
+	}
+
+	return JsonResponse(context)
+
+def calcDist(strTour):
+	dist = 0
+	for i in range(0, len(strTour)/2):
+		if i == (len(strTour)/2 - 1):
+			dist = dist + math.sqrt(abs(strTour[(i*2)] - strTour[0])**2 +
+									abs(strTour[(i*2) + 1] - strTour[1])**2)
+		else:
+			dist = dist + math.sqrt(abs(strTour[(i*2)] - strTour[(i*2)+2])**2 +
+									abs(strTour[(2*i)+1] - strTour[(2*i)+3])**2)
+	return dist
+
+def submitTour(request):
+	usrPath = request.GET.get('tourKey', None)
+	bbLen = request.GET.get('tourBBLen', None)
+	tsp = request.GET.get('tsp', None)
+	userLength = request.GET.get('usrLen', None)
+	usrPathLen = request.GET.get('pathLen', None)
+	numNodes = request.GET.get('input1', None)
+
+	tuple = {}
+
+	if request.user.is_authenticated():
+		if int(usrPathLen) == int(numNodes) and userLength != '0':
+			tsp = tsp.split(',')
+			tsp = map(float, tsp)
+
+
+			tspKV = list()
+			for i in range(0, int(numNodes)):
+				tspKV.append((tsp[i*2], tsp[i*2+1], i))
+
+
+
+			usrPath = str(usrPath)
+			usrPath = usrPath[15:len(usrPath) - 7]
+
+			newTupleScoreboard = scoreboard()
+			newTupleScoreboard.id = request.user
+			newTupleScoreboard.name = request.user.first_name + ' ' + request.user.last_name
+			newTupleScoreboard.tourProblem = str(tspKV)
+			newTupleScoreboard.userSolution = str(usrPath)
+			newTupleScoreboard.userLength = userLength
+			newTupleScoreboard.algorithmName = "Backbone Algorithm"
+			newTupleScoreboard.algorithmLength = str(round(float(bbLen),2))
+			newTupleScoreboard.numberOfNodes = numNodes
+			newTupleScoreboard.save()
+			return JsonResponse(tuple)
+
+
+def gethiscores(request):
+	temp = list()
+	queryset = scoreboard.objects.all()
+
+	for i in range(len(queryset)):
+		temp2 = list()
+		temp2.append(str(queryset[i].id))
+		temp2.append(queryset[i].name)
+		temp2.append(queryset[i].tourProblem)
+		temp2.append(queryset[i].userSolution)
+		temp2.append(queryset[i].userLength)
+		temp2.append(queryset[i].algorithmName)
+		temp2.append(queryset[i].algorithmLength)
+		temp2.append(queryset[i].dateSubmitted)
+		temp2.append(queryset[i].numberOfNodes)
+		temp.append(temp2)
+
+	context = {
+		"queryset": temp
+	}
+	return JsonResponse(context)
+
+
+def register(request):
+	args = {}
+	if request.method == 'POST':
+		form = registerForm(request.POST)
+		if form.is_valid():
+			mysite = Site.objects.get_current()
+			usr = form.save()
+			regProfile = RegistrationProfile.objects.create_profile(usr)
+			regProfile.send_activation_email(mysite)
+		return render(request, 'landingpage.html' , args)
+	else:
+		form = registerForm()
+		args = {'form': form}
+		return render(request, 'registration/registration_form.html' , args)
 
 # Backend code
 
@@ -628,7 +828,7 @@ def landingBackbones(tours):
 	tspSolutions = list()
 	for i in range(6):
 		tmp = list()
-		tmp2 = tours[i*400: i*400 + 400]
+		tmp2 = tours[i*200: i*200 + 200]
 		for j in range(len(tmp2)/2):
 			tmp.append(City(tmp2[j*2], tmp2[j*2+1]))
 		tspSolutions.append(tmp)

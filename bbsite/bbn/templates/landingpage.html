@@ -6,7 +6,7 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-<script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+
 <script>
   var cities = [];
   var numberOfCities
@@ -19,7 +19,7 @@
     var canvas = createCanvas(800, 400);
     canvas.parent("tsp");
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 100; i++) {
       v = createVector(random(700) + 50, random(300) + 50)
       cities[i] = v
       unvisited[i] = v
@@ -191,7 +191,7 @@
         unvisited.splice(start, 1);
       },
       error: function(ex) {
-
+        alert('')
       }
     });
   }

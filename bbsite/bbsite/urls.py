@@ -17,13 +17,23 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from bbn.views import home, vsliresults, graphOutput, landingpageTSP
+from bbn.views import home, vsliresults, graphOutput, landingpageTSP, getATour, userTour, gethiscores, submitTour, googCTSP, register
 
 urlpatterns = [
 	url(r'^$', home, name='home'),
 	url(r'^landingpageTSP/$', landingpageTSP, name='lTSP'),
-	url(r'^results/$', vsliresults, name='results'),
+
 	url(r'^game/$', graphOutput, name='plotter'),
+    url(r'^game/tour/$', getATour, name='tour'),
+    url(r'^game/userTour/$', userTour, name='userTour'),
+    url(r'^game/hiscore/', gethiscores, name='hiscore'),
+    url(r'^game/subhiscore/', submitTour, name='subhiscore'),
+    url(r'^game/googletour/', googCTSP, name='googletour'),
+
+    url(r'^results/$', vsliresults, name='results'),
+
+    url(r'^accounts/register/', register, name='register'),
+
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('registration.backends.default.urls'))
 ]
