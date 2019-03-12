@@ -347,7 +347,7 @@
 							but8.addClass('mx-1')
 							but8.parent('userTSPSubmit')
 							but8.mousePressed(function() {
-								removeCTSP();
+								resetCTSP();
 							})
 
 							raceWinner = createP(raceResult);
@@ -1501,7 +1501,6 @@
 								listElem.children[i].remove();
 							}
 						}
-						console.log(customTSP)
 					}
 
 					function drawCTSP() {
@@ -1559,14 +1558,13 @@
 
 					function resetCTSP(){
 						resetTour();
-
 						listElem = document.getElementById('userTSP')
-
+						console.log(customTSP)
 						for (let i = 0; i < customTSP.length; i++) {
-							customTSP.splice(i, 1);
-							listElem.children[i].remove();	
+							listElem.children[0].remove();	
 						}
-						
+						customTSP = []
+						console.log(customTSP)
 					}
 
 					var textArr = []
