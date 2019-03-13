@@ -33,7 +33,7 @@ from registration.models import RegistrationProfile
 def home(request):
 	context = {}
 	MYSITE = Site.objects.get_current()
-	MYSITE.domain = 'https://bbsite123321.herokuapp.com'
+	MYSITE.domain = '127.0.0.1:8000'
 	MYSITE.name = 'My Site'
 	MYSITE.save()
 
@@ -261,7 +261,7 @@ def register(request):
 			usr = form.save()
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
-		return redirect('https://bbsite123321.herokuapp.com', args)
+		return redirect('http://127.0.0.1:8000', args)
 	else:
 		form = registerForm()
 		args = {'form': form}
