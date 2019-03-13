@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['bbsite123321.herokuapp.com', '127.0.0.1']
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'tannguyenww@gmail.com'
 EMAIL_HOST_PASSWORD = 'doomworm123qwe'
-EMAIL_PORT = 465
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
@@ -151,11 +151,11 @@ LOGIN_REDIRECT_URL = '/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-import dj_database_url 
+import dj_database_url
 prod_db  =  dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(prod_db)
 
 # django security layer
-SECURE_SSL_REDIRECT = False
+# SECURE_SSL_REDIRECT = False
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
