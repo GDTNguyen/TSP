@@ -28,8 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['bbsite123321.herokuapp.com', '127.0.0.1']
 
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'tannguyenww@gmail.com'
-EMAIL_HOST_PASSWORD = 'doomworm123qwe'
+EMAIL_HOST_USER = 'k1502450@gmail.com'
+EMAIL_HOST_PASSWORD = 'P123456!'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -158,4 +158,3 @@ DATABASES['default'].update(prod_db)
 # django security layer
 # SECURE_SSL_REDIRECT = False
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
