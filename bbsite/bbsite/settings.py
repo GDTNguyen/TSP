@@ -37,23 +37,24 @@ EMAIL_USE_TLS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
     # my apps
     'bbn',
     # third party
     'crispy_forms',
     'registration',
+    #library
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
 
 ]
 
-MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+MIDDLEWARE_CLASSES = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,7 +69,7 @@ ROOT_URLCONF = 'bbsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "templates"), os.path.join(os.path.join(BASE_DIR, "templates"), "bbn")],
+        'DIRS': ['/Users/tan/Downloads/TSPV2/bbsite/templates', '/Users/tan/Downloads/TSPV2/bbsite/bbn/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,6 +78,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': { # Adding this section should work around the issue.
+                'staticfiles' : 'django.templatetags.static',
+                'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags'
+            },
         },
     },
 ]
@@ -133,7 +138,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '../static/some_static/'
+#deployment
+STATIC_ROOT = '/Users/tan/Downloads/TSPV2/bbsite/static/some_static'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static", "some_static"),
@@ -145,7 +151,6 @@ ACCOUNT_ACTIVATION_DAYS = 7
 REGISTRATION_AUTO_LOGIN = True
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
-
 
 #  Add configuration for static files storage using whitenoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
