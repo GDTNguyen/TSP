@@ -199,8 +199,7 @@ def submitTour(request):
 	numNodes = request.GET.get('input1', None)
 
 	tuple = {}
-
-	if request.user.is_authenticated():
+	if request.user.is_active:
 		if int(usrPathLen) == int(numNodes) and userLength != '0':
 			tsp = tsp.split(',')
 			tsp = map(float, tsp)
@@ -263,11 +262,12 @@ def register(request):
 				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Username already in use."})
 			elif str(user.email) == str(formEmail):
 				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Email already in use."})
-		print formz
 		if formz.is_valid():
 			print "registering account"
 			mysite = Site.objects.get_current()
 			usr = formz.save()
+			usr.is_active = False
+			usr.save()
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
 			return redirect('http://127.0.0.1:8000', args)
