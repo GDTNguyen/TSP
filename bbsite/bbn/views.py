@@ -13,7 +13,7 @@ import copy
 import functools
 import math
 from itertools import permutations
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, render_to_response
 from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -254,10 +254,18 @@ def gethiscores(request):
 def register(request):
 	args = {}
 	if request.method == 'POST':
-		form = registerForm(request.POST)
-		if form.is_valid():
+		formz = registerForm(request.POST)
+		users = User.objects.all()
+		formEmail = formz['email'].value()
+		usrName = formz['username'].value()
+		for user in users:
+			if str(user.username) == str(usrName):
+				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Username already in use."})
+			elif str(user.email) == str(formEmail):
+				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Email already in use."})
+		if formz.is_valid():
 			mysite = Site.objects.get_current()
-			usr = form.save()
+			usr = formz.save()
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
 		return redirect('http://127.0.0.1:8000', args)
