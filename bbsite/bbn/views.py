@@ -263,16 +263,20 @@ def register(request):
 				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Username already in use."})
 			elif str(user.email) == str(formEmail):
 				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Email already in use."})
+		print formz
 		if formz.is_valid():
+			print "registering account"
 			mysite = Site.objects.get_current()
 			usr = formz.save()
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
-		return redirect('http://127.0.0.1:8000', args)
+			return redirect('http://127.0.0.1:8000', args)
+		return render(request, 'registration/registration_form.html' , {'form': formz})
 	else:
 		form = registerForm()
 		args = {'form': form}
 		return render(request, 'registration/registration_form.html' , args)
+
 
 # Backend code
 
