@@ -26,7 +26,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from registration.models import RegistrationProfile
 
-
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 # Create your views here.
 
@@ -61,12 +61,11 @@ def landingpageTSP(request):
 	}
 	return JsonResponse(context)
 
+import csv
+
 # results page
 def vsliresults(request):
-	context = {
-
-	}
-
+	context = {}
 	return render(request, 'vsli.html', context)
 
 # Create your views here.
@@ -166,7 +165,7 @@ def googCTSP(request):
 
 	for i in range(len(tourArr)/2):
 		tourCities.add(City(tourArr[i*2], tourArr[i*2+1]))
-	
+
 
 	tourBB = info(tourCities)
 
@@ -890,4 +889,3 @@ def landingBackbones(tours):
 	print text
 
 	return [cartesian, text, length, listOfBackbones]
-
