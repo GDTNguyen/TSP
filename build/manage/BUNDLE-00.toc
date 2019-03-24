@@ -1,1 +1,0 @@
-([('manage', '/Users/tan/Downloads/TSP/dist/manage', 'EXECUTABLE')],)
