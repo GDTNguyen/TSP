@@ -69,7 +69,7 @@ ROOT_URLCONF = 'bbsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/Users/tan/Documents/TSP/bbsite/templates', '/Users/tan/Documents/TSP/bbsite/bbn/templates'],
+        'DIRS': ['templates', 'bbn/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,10 +136,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/Users/tan/documents/TSP/bbsite/static/some_static/'
+STATIC_URL = 'static/some_static/'
 
 #deployment
-STATIC_ROOT = '/Users/tan/documents/TSP/bbsite/static/some_static'
+STATIC_ROOT = 'static/some_static'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static", "some_static"),
