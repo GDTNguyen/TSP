@@ -29,7 +29,6 @@ from registration.models import RegistrationProfile
 from django.contrib.staticfiles.storage import staticfiles_storage
 
 # Create your views here.
-
 def home(request):
 	context = {}
 	MYSITE = Site.objects.get_current()
@@ -47,7 +46,6 @@ def home(request):
 
 	return render(request, 'landingpage.html', context)
 
-# landing page
 @csrf_exempt
 def landingpageTSP(request):
 	tsp1 = request.POST.get('tsp1', None)
@@ -61,33 +59,26 @@ def landingpageTSP(request):
 	}
 	return JsonResponse(context)
 
-import csv
-
-# results page
 def vsliresults(request):
 	context = {}
 	return render(request, 'vsli.html', context)
 
-# Create your views here.
 def graphOutput(request):
-	#this takes a request from the front end and then the response is simple to render the html templates
 	context = {}
-
 	return render(request, 'plot.html', context)
-
 
 def getATour(request):
 
 	citiesNum = request.GET.get('numCities', 10)
 	backboneLen = request.GET.get('backboneLen', 0)
-	# Seed can be any number between 0 - 40 even floats
 	newInstance = request.GET.get('newInstance', 0)
 
 	if int(citiesNum) > 1000:
-		print "Instance size of {:} is too large, size set to 1000.".format(citiesNum)
+		print "Instance size of {:} is too large, size set to 1000.".format(
+		    citiesNum)
 		citiesNum = 1000
 
-	#this takes a request from the front end and then the response is simple to render the html template
+	# this takes a request from the front end and then the response is simple to render the html template
 	try:
 		tourBB = info(Cities(int(citiesNum),
 							 seed=float(newInstance)),
@@ -120,13 +111,13 @@ def userTour(request):
 	tourKey = tourKey[slice(15, len(tourKey) - 7)].split(',')
 	tourKeyArr = [int(x) for x in tourKey]
 
-	#get the list of cities
+	# get the list of cities
 	tourVal = tourVal.split(',')
 	tourVal = map(float, tourVal)
 
 	benchmarkBB(tourVal)
 
-	#define variables for context
+	# define variables for context
 	tour = []
 	tourLen = 0
 	valid = False
@@ -135,12 +126,12 @@ def userTour(request):
 	if len(tourKeyArr) == int(pathLen):
 	 	valid = True
 
-	#get the tour
+	# get the tour
 	for i in tourKeyArr:
-		tour.append(tourVal[i*2])
-		tour.append(tourVal[i*2 + 1])
+		tour.append(tourVal[i * 2])
+		tour.append(tourVal[i * 2 + 1])
 
-	#get the tour length
+	# get the tour length
 	if valid == True:
 		tourLen = "Tour distance: {:.2f}".format(calcDist(tour))
 		ratios = ratio(float(tourBBLen), calcDist(tour))
@@ -163,9 +154,8 @@ def googCTSP(request):
 	tourArr = [float(x) for x in tour]
 	tourCities = set()
 
-	for i in range(len(tourArr)/2):
-		tourCities.add(City(tourArr[i*2], tourArr[i*2+1]))
-
+	for i in range(len(tourArr) / 2):
+		tourCities.add(City(tourArr[i * 2], tourArr[i * 2 + 1]))
 
 	tourBB = info(tourCities)
 
@@ -174,19 +164,19 @@ def googCTSP(request):
 		"bbData": tourBB[1],
 		"tourBBLen": tourBB[2],
 		"backbones": tourBB[3],
-		"lentour": len(tourArr)/2,
+		"lentour": len(tourArr) / 2,
 	}
 
 	return JsonResponse(context)
 
 def calcDist(strTour):
 	dist = 0
-	for i in range(0, len(strTour)/2):
-		if i == (len(strTour)/2 - 1):
-			dist = dist + math.sqrt(abs(strTour[(i*2)] - strTour[0])**2 +
+	for i in range(0, len(strTour) / 2):
+		if i == (len(strTour) / 2 - 1):
+			dist = dist + math.sqrt(abs(strTour[(i * 2)] - strTour[0])**2 +
 									abs(strTour[(i*2) + 1] - strTour[1])**2)
 		else:
-			dist = dist + math.sqrt(abs(strTour[(i*2)] - strTour[(i*2)+2])**2 +
+			dist = dist + math.sqrt(abs(strTour[(i * 2)] - strTour[(i * 2) + 2])**2 +
 									abs(strTour[(2*i)+1] - strTour[(2*i)+3])**2)
 	return dist
 
@@ -204,12 +194,9 @@ def submitTour(request):
 			tsp = tsp.split(',')
 			tsp = map(float, tsp)
 
-
 			tspKV = list()
 			for i in range(0, int(numNodes)):
-				tspKV.append((tsp[i*2], tsp[i*2+1], i))
-
-
+				tspKV.append((tsp[i * 2], tsp[i * 2 + 1], i))
 
 			usrPath = str(usrPath)
 			usrPath = usrPath[15:len(usrPath) - 7]
@@ -221,11 +208,10 @@ def submitTour(request):
 			newTupleScoreboard.userSolution = str(usrPath)
 			newTupleScoreboard.userLength = userLength
 			newTupleScoreboard.algorithmName = "Backbone Algorithm"
-			newTupleScoreboard.algorithmLength = str(round(float(bbLen),2))
+			newTupleScoreboard.algorithmLength = str(round(float(bbLen), 2))
 			newTupleScoreboard.numberOfNodes = numNodes
 			newTupleScoreboard.save()
 			return JsonResponse(tuple)
-
 
 def gethiscores(request):
 	temp = list()
@@ -249,7 +235,6 @@ def gethiscores(request):
 	}
 	return JsonResponse(context)
 
-
 def register(request):
 	args = {}
 	if request.method == 'POST':
@@ -259,9 +244,9 @@ def register(request):
 		usrName = formz['username'].value()
 		for user in users:
 			if str(user.username) == str(usrName):
-				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Username already in use."})
+				return render(request, 'registration/registration_form.html', {'form': formz, 'error': "Username already in use."})
 			elif str(user.email) == str(formEmail):
-				return render(request, 'registration/registration_form.html' , {'form': formz, 'error': "Email already in use."})
+				return render(request, 'registration/registration_form.html', {'form': formz, 'error': "Email already in use."})
 		if formz.is_valid():
 			print "registering account"
 			mysite = Site.objects.get_current()
@@ -271,49 +256,41 @@ def register(request):
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
 			return redirect('http://127.0.0.1:8000', args)
-		return render(request, 'registration/registration_form.html' , {'form': formz})
+		return render(request, 'registration/registration_form.html', {'form': formz})
 	else:
 		form = registerForm()
 		args = {'form': form}
-		return render(request, 'registration/registration_form.html' , args)
-
+		return render(request, 'registration/registration_form.html', args)
 
 # Backend code
 
-# Contains code for a brute force approach and a heuristic, the nearest-neighbor
-
-#--------------------------------------------------------
-#Brute Force Approach
-
-#generate all possible tours given a set of cities
+# generate all possible tours given a set of cities
 possibletours = itertools.permutations
 
-#gets the shortest tour from a set of cities
 def alltours(cities):
+	"""Return the shortest tour from a set of Cities."""
 	return shortestTour(possibletours(cities))
 
 def shortestTour(tours):
+	"""Takes a set of tours and gets the smallest Tour."""
 	return min(tours, key=tourLength)
 
-#--------------------------------------------------------
-
-#returns the length of a tour
 def tourLength(tour):
-	return sum(distance(tour[i-1], tour[i]) for i in range(0, len(tour)))
+	"""Return the length of a tour of complex points."""
+	return sum(distance(tour[i - 1], tour[i]) for i in range(0, len(tour)))
 
-#representation of a city location
 class Point(complex):
+	"""A object that represents a node."""
 	x = property(lambda p: p.real)
 	y = property(lambda p: p.imag)
 
-#a city can be initialised as a point
 City = Point
 
-
-#distance between two point where one or both could be a backbone
 def distance(A, B, *args):
+	"""Returns the distance between two Point object."""
 	if str(type(B)) == "<class 'bbn.views.Backbone'>" and str(type(A)) == "<class 'bbn.views.Backbone'>":
-		tmp = min(abs(A.y[0] - B.y[0]), abs(A.y[-1] - B.y[0]), abs(A.y[0] - B.y[-1]), abs(A.y[-1] - B.y[-1]))
+		tmp = min(abs(A.y[0] - B.y[0]), abs(A.y[-1] - B.y[0]),
+		          abs(A.y[0] - B.y[-1]), abs(A.y[-1] - B.y[-1]))
 		if abs(A.y[0] - B.y[0]) == tmp:
 			A.z = 'L'
 			B.z = 'L'
@@ -327,7 +304,6 @@ def distance(A, B, *args):
 			A.z = 'R'
 			B.z = 'R'
 		return tmp
-
 
 	elif str(type(A)) == "<class 'bbn.views.Backbone'>":
 		if A.z == 'R':
@@ -354,13 +330,13 @@ def distance(A, B, *args):
 			return abs(A - B.y[-1])
 	return abs(A - B)
 
-#return the first element
 def firstElem(collection):
+	"""Return first element in a collection."""
 	return next(iter(collection))
 
-#nearest neighbor from a cities to city and checks if nearest neighbor is a backbone city
 def nearest_neighbor(city, cities):
-	minDist = min(cities, key=lambda b:distance(b, city))
+	"""Returns a TSP solution using Nearest_neighbor approach."""
+	minDist = min(cities, key=lambda b: distance(b, city))
 	if str(type(minDist)) == "<class 'bbn.views.Backbone'>":
 		if minDist.z == 'Lunsure':
 			minDist.z = 'L'
@@ -368,8 +344,8 @@ def nearest_neighbor(city, cities):
 			minDist.z = 'R'
 	return minDist
 
-#nearest neighbor starts tour at arbitrary city in the tour
 def nnVariation(cities, start=None):
+	"""Returns a TSP solution using nearest_neighbor starting at a specified point."""
 	if start is None:
 		start = firstElem(cities)
 
@@ -380,16 +356,15 @@ def nnVariation(cities, start=None):
 		tour.append(candidate)
 		unvisited.remove(candidate)
 
-	#cleans backbones of weather it has been used
 	for city in tour:
 	    if str(type(city)) == "<class 'bbn.views.Backbone'>":
 	        city.z = ' '
 
 	return tour
 
-#makes a set of cities with in a rectangle, there are 50 possible seeds thus sets you can have
 def Cities(n, width=1000, height=600, seed=50):
-	random.seed(seed*n)
+	"""Returns a set of cities size n, saved to a seed between 0 - 50."""
+	random.seed(seed * n)
 	tempSet = set()
 	for a in range(n):
 		tempCity = City(random.randrange(width), random.randrange(height))
@@ -399,20 +374,17 @@ def Cities(n, width=1000, height=600, seed=50):
 		tempSet.add(tempCity)
 	return frozenset(tempSet)
 
-#put in a tour and connects the last and first point
 def plotTour(tour, *args):
+	"""Plots a tour of Points."""
 	if not args:
 		plotPoints(list(tour) + [tour[0]])
 	else:
 		plotPoints(list(tour))
 
-
-#takes a list of points and plots
 def plotPoints(points):
 	x = []
 	y = []
 
-	#checks if a point is a backbone, will plot average point
 	for p in points:
 		if str(type(p)) == "<class 'bbn.views.Backbone'>":
 			x.append(p.x.x)
@@ -422,59 +394,58 @@ def plotPoints(points):
 			y.append(p.y)
 	plt.plot(x, y, 'bo-')
 
-#apply a tsp algo to cities
 def applyTSP(algo, cities):
+	"""Returns a solution on the cities using the algorithm specified."""
 	t0 = time.clock()
 	tour = algo(cities)
 	t1 = time.clock()
-	print("{} city tour with length {:.1f} in {:.3f} secs for {}".format(len(tour), tourLength(tour), t1 - t0, algo.__name__))
+	print("{} city tour with length {:.1f} in {:.3f} secs for {}".format(
+	    len(tour), tourLength(tour), t1 - t0, algo.__name__))
 	plotTour(tour)
 	plt.show()
 
-#applyTSP(nnVariation, Cities(4, 4))
-
-#ANALYSIS length between two algorithms
 def ratio(cities, cities2):
+	"""Returns the difference between two solutions in ratio."""
 	if (cities - cities2) == 0:
 		return "Your tour is {:.1f} % better than the BB Tour".format(0)
 	elif (cities - cities2) <= 0:
-		return "Your tour is {:.3f}% worse than the BB Tour.".format((abs(cities - cities2)/cities))
+		return "Your tour is {:.3f}% worse than the BB Tour.".format((abs(cities - cities2) / cities))
 	elif (cities - cities2) > 0:
-		return "your tour is {:.3f}% better than the BB Tour".format((abs(cities - cities2)/cities))
+		return "your tour is {:.3f}% better than the BB Tour".format((abs(cities - cities2) / cities))
 	else:
 		return "Invalid Tour Input"
 
-# sampled approach to nnVariation
-def repeatedNN(cities, repititions = 100):
+def repeatedNN(cities, repititions=100):
+	"""Returns a TSP solution using nearest_neighbor on 0 - 100 random cities."""
 	return shortestTour(nnVariation(cities, start) for start in sample(cities, repititions))
 
 def repeatedNN10(cities):
+	"""Returns a TSP solution using nearest_neighbor on 10 random cities."""
 	return repeatedNN(cities, 10)
 
 def repeatedNN100(cities):
+	"""Returns a TSP solution using nearest_neighbor on 100 random cities."""
 	return repeatedNN(cities, 100)
 
+
 def sample(cities, repititions, seed=42):
+	"""Returns a sub-tour of cities from a list of cities."""
 	return random.sample(cities, repititions)
 
-#print repeatedNN(Cities(20, 4), 10)
-
-#Tuple of maps, the maps are of cities Maps(30, 60), 30 maps each containing 60 cities and unique to numCities value
 def Maps(numMaps, numCities):
+	"""Returns a map of unique TSP problems length numCities and number numMaps."""
 	return tuple(Cities(numCities, seed=(n, numCities))
 				 for n in range(numMaps))
 
-#print Maps(4, 4)
-
-#ANALYSIS average time for all inputs
 def benchmark(funct, cities):
+	"""Returns time taken to find a solution on cities using funct."""
 	t0 = time.clock()
 	results = [funct(x) for x in cities]
 	t1 = time.clock()
-	return (t1 - t0/len(cities), results)
+	return (t1 - t0 / len(cities), results)
 
-#ANALYSIS for many tsp algorithms
-def benchmarks(functions, maps=Maps(30,60)):
+def benchmarks(functions, maps=Maps(30, 60)):
+	"""Apples a list of functions onto a Map of TSP problems."""
 	for function in functions:
 		t, result = benchmark(function, maps)
 		length = [tourLength(r) for r in result]
@@ -482,13 +453,8 @@ def benchmarks(functions, maps=Maps(30,60)):
               .format(function.__name__, mean(lengths), stdev(lengths), min(lengths), max(lengths),
                       t, len(maps), len(maps[0])))
 
-#algorithms = [nn_tsp, repeat_10_nn_tsp, repeat_25_nn_tsp, repeat_50_nn_tsp, repeat_100_nn_tsp]
-
-#----------------------
-
-
-#backbone class x is complex number, y is the backbone, z is connectors
 class Backbone(object):
+	"""A Backbone Object that contains x and y corodinate and subset in z."""
 	def __init__(self, x, y, *args):
 		self.x = x
 		self.y = y
@@ -497,38 +463,37 @@ class Backbone(object):
 	def __repr__(self):
 		return repr(self.x)
 
-
-#this gets ALL common backbone between a set of tours of arbitrary lengths, ommitting sub-backbones of long bones
 def getAllBackBones(tours, *args):
-	#number of tours
+	"""Return a list of backbones from a set of tours greater than length 1."""
+	# number of tours
 	lengthTours = len(tours)
 
-	#get first tour and its length
+	# get first tour and its length
 	firstTour = tours[0]
 	lengthFirst = len(firstTour)
 
-	#store backbones
+	# store backbones
 	backbones = list()
 
 	switch = False
 
-	#all combinations
+	# all combinations
 	for i in range(0, lengthFirst):
 		for j in range(i + 1, lengthFirst + 1):
 			tmp = firstTour[i:j]
-			#loops through each tour to check if tmp is contained
+			# loops through each tour to check if tmp is contained
 			k = 1
 			for k in range(k, lengthTours):
 				tmpStr = ''.join(str(e) for e in tours[k])
 				tmpTmp = ''.join(str(e) for e in tmp)
-				#if subtour is not in any of the tours then we append the current bb
+				# if subtour is not in any of the tours then we append the current bb
 				if not (tmpTmp in tmpStr):
 					if switch:
 						backbones.append(firstTour[i:j - 1])
 						switch = False
 					break
-				#we get to the end of the check of tours then we hit a inital match!
-				if k==lengthTours-1 and not switch:
+				# we get to the end of the check of tours then we hit a inital match!
+				if k == lengthTours - 1 and not switch:
 					switch = True
 
 	if len(args[0]) == 0:
@@ -537,8 +502,6 @@ def getAllBackBones(tours, *args):
 		for x in args:
 			return prunebackBonesLE(backbones, x[0])
 
-#takes a list of backbones and returns a backbone less than or equal too
-#optimising backbones
 def prunebackBonesLE(backbones, length):
 	prunedBackbones = list()
 	for backbone in backbones:
@@ -554,7 +517,6 @@ def prunebackBonesGE(backbones, length):
 			prunedBackbones.append(backbone)
 	return prunedBackbones
 
-#backbones inbetween len1 and len2 or outside
 def prunebackBonesGELE(backbones, length1, length2):
 	prunedBackbones = list()
 	for backbone in backbones:
@@ -569,8 +531,8 @@ def prunebackBonesLEGE(backbones, length1, length2):
 			prunedBackbones.append(backbone)
 	return prunedBackbones
 
-#convert a subset of tours into a backbone
 def bbEdgesToBB(backboneEdges):
+	"""Return a Backbone object from a list of Points."""
 	real = []
 	img = []
 
@@ -578,10 +540,10 @@ def bbEdgesToBB(backboneEdges):
 		real.append(city.x)
 		img.append(city.y)
 
-	return Backbone(City(round(sum(real)/len(backboneEdges),0), round(sum(img)/len(backboneEdges),0)) , backboneEdges)
+	return Backbone(City(round(sum(real) / len(backboneEdges), 0), round(sum(img) / len(backboneEdges), 0)), backboneEdges)
 
-#substitute the backbone into the set of tours generated by nnVariation
 def bbSubstitution(collection, backbone):
+	"""Returns the collection of tours with substituted backbones."""
 	tours = list()
 	for path in collection:
 		tmp = copy.deepcopy(path)
@@ -595,183 +557,229 @@ def bbSubstitution(collection, backbone):
 		tours.append(tmp)
 	return tours
 
-#applies the backbone onto xyz; is is the only time we really use KNN (to generate tours). We just feed it a tour
+def generateAllTours(cities):
+	"""Returns all possible TSP solutions variations using nearest_neighbor."""
+	alltours = list()
+	if len(cities) < 2:
+		return cities
+	for city in cities:
+		alltours.append(nnVariation(cities, city))
+	return alltours
+
 def bbReduction(tour, *args):
-	tspSolutions = list()
-
-	#one or zero length tours
-	if len(tour) < 2:
-		return tour
-
-	#get a set of good tours
-	for city in tour:
-		tspSolutions.append(nnVariation(tour, city))
-
-	#solutions into a dictionary by their length
+	"""Return the tour with a backbone substitution."""
+	tspSolution = generateAllTours(tour)
 	topDict = {}
 	meanSqu = {}
-	# Holds the set of tours we examine for backbones
 	top = list()
-	avg = 0
-	standardDev = 0
-
-	# calculates the length for each tour
-	for tours in tspSolutions:
-		if type(tours) == 'Point' or len(tours) < 2:
-			topDict[tuple(tours)] = -1
+	maxi = 0
+	for tours in tspSolution:
+		if str(type(tours)) == "<class 'bbn.views.Point'>":
+			topDict[tuple([tours])] = 0
 		else:
-			topDict[tuple(tours)] = tourLength(tours)
+			if len(tours) < 2:
+				topDict[tuple([tours])] = 0
+			else:
+				topDict[tuple(tours)] = tourLength(tours)
 
-	# Calculate the average of the tours in dictionary
-	avg = sum(topDict.values())/ len(topDict)
-
-	# Calculate the standard deviation
-	for val in topDict:
-		meanSqu[val] = (topDict[val] - avg)**2
-	standardDev = math.sqrt(sum(meanSqu.values())/ len(meanSqu))
-
-	# Store the distribution of lengths
-	store = {}
-	# Number of samples for the distribution
-	k = 0
-
-	candidate = 999999
-
-    # a Tour len < 500 cannot generate significant statistical data so a differ-
-	# stategy is used
 	if(len(tour) < 500):
-		# gets top 10 percent of shortest tours
-		for i in range(0, int(round(len(tspSolutions)*0.6 + 0.5))):
-            #picking method
+		for i in range(0, int(round(len(tspSolution) * 0.6 + 0.5))):
+			# Picking method
 			tmp = random.choice(topDict.keys())
-			#tmp = max(topDict, key=topDict.get)
-            #tmp = min(topDict, key=topDict.get)
 			top.append(list(tmp))
 			del topDict[tmp]
 	else:
-		while(candidate > (avg + (standardDev/2)) and k < 200):
-            #a random list of tours from dictionary of tours and calculates average
+		avg = sum(topDict.values()) / len(topDict)
+		for val in topDict:
+			meanSqu[val] = (topDict[val] - avg)**2
+		standardDev = math.sqrt(sum(meanSqu.values()) / len(meanSqu))
+		avg1 = avg + (standardDev / 2)
+		store = {}
+		candidate = 999999
+		k = 0
+		maxi = 0
+		while(candidate > avg1 and k < 1000):
+			#List of tours from dictionary of tours and calculates average
 			top = list()
-			ranSample = random.sample(topDict, int(round(len(tspSolutions)*0.1 + 0.5)))
-			avgRanSamp = 0
-			for item in ranSample:
-				avgRanSamp += topDict[item]
+			tmp = random.sample(topDict, int(round(len(tspSolution) * 0.1 + 0.5)))
+			tmp2 = 0
+			for item in tmp:
+				tmp2 += topDict[item]
 				top.append(list(item))
-			candidate = avgRanSamp / len(ranSample)
-            #store these averages in a dictionary
+			candidate = tmp2 / len(tmp)
+			#Store these averages in a dictionary, K - average value, V - frequency
 			if candidate < avg1:
 				try:
 					store[round(candidate, 2)].append(top)
 					store[round(candidate, 2)][0] = store[round(candidate, 2)][0] + 1
 				except:
 					store[round(candidate, 2)] = [1, top]
-				candidate = 999999999
+			candidate = 999999999
 			k += 1
-			top = list()
-        #picking most common tour lengths from dictionary method
-		maxLen = 0
+		# Fitness Proportion Seletion
+		indexRoulette = rouletteSel(store)
+		counter = 0
 		for item in store:
-			if store[item][0] > maxLen and store[item][0] > 1:
-				maxLen = store[item][0]
+			if counter == indexRoulette:
 				top = store[item][random.randint(1, len(store[item]) - 1)]
+				break
+			counter += 1
 
-	# looks for BB in all the tours in top
-	# substitute these backbones into all the tours
-	reducedTours = set()
+	backbones = list()
 	for backbone in getAllBackBones(top, args[0]):
-		for tour in bbSubstitution(top, bbEdgesToBB(backbone)):
-			reducedTours.add(tuple(tour))
+		backbones.append(backboneEdgesToBackbones(backbone))
 
-	#put in a dictionary of tours with backbones
+	reducedTours = set()
+	for backbone in backbones:
+		for tour in backboneSubstitution(top, backbone):
+			reducedTours.add(tuple(tour))
 	smallest = {}
 	for tour in reducedTours:
 		smallest[tour] = tourLength(tour)
-
 	if len(smallest) == 0:
-		return tour
+		return [0, tour]
 	else:
-		return min(smallest, key=smallest.get)
+		return [maxi, min(smallest, key=smallest.get)]
 
 def minmax(list):
-    minVal = min(list)
-    maxVal = max(list)
+	"""Return a tuple of smallest and largest values in list."""
+	minVal = min(list)
+	maxVal = max(list)
+	return (minVal, maxVal)
 
-    return (minVal, maxVal)
-
-
-
-#applies the backbone onto sections of a map
 def windowMethod(cities, *args):
-
+	"""Return a TSP solution using Backbones."""
 	altTour = list()
 	density = 150
-
-	#alter the cluster size depending on the size of the cities
+	avgDis = 0
+	count = 0
+	citiesCopy = set(cities)
+	#Calculate density of clusters (avg distance)
+	if len(cities) > 10:
+		temp = random.sample(cities, 1)[0]
+		citiesCopy.remove(temp)
+		while(count < int(round(len(cities)*0.1 + 0.5))):
+			node = nearest_neighbor(temp, citiesCopy)
+			avgDis += abs(temp - node)
+			citiesCopy.remove(node)
+			count += 1
+		density = avgDis/int(round(len(cities)*0.1 + 0.5))
 	clusterSize = 10
 	if len(cities) > 200:
-		clusterSize = 20
-
+		clusterSize = 100
+	#Generate clusters
 	for cluster in generateClusters(set(cities), clusterSize, density):
-		if len(cities) < 500:
+		if len(cities) < 1000:
 			altTour.append(bbReduction(set(cluster), args[0]))
 		else:
-			#take a sample from cities and then calculate the average distance
-			avgDis = 0
-			count = 0
-			citiesCopy = set(cities)
-			if len(cities) > 10:
-				temp = random.sample(cities, 1)[0]
-				citiesCopy.remove(temp)
-				while(count < int(round(len(cities)*0.1 + 0.5))):
-					node = nearest_neighbor(temp, citiesCopy)
-					avgDis += abs(temp - node)
-					citiesCopy.remove(node)
-					count += 1
-			density = avgDis/int(round(len(cities)*0.1 + 0.5))
-
-			# this will ignore smaller groups of nodes
-			if len(cluster) >= 10:
+			if len(cluster) >= 80:
 				altTour.append(bbReduction(set(cluster), args[0]))
 			else:
-				altTour.append(set(cluster))
-
-	cit = list()
+				altTour.append([0, cluster])
+	topSelection = 2
+	cities = list()
+	backbones = {}
+	for i in range(len(altTour)):
+		tmpVal = altTour[i][0]
+		if (tmpVal > 0):
+			backbones[i] = tmpVal
+	if len(backbones) < 10:
+		temp = list()
+		for i in range(topSelection):
+			if len(backbones) == 0:
+				break
+			maxIndex, maxValue = random.choice(list(backbones.items()))
+			altTour[maxIndex][0] = -1
+			del backbones[maxIndex]
+			cities = cities + list(altTour[maxIndex][1])
+	else:
+		distances = False
+		count = 0
+		while not(distances):
+			if len(backbones) == 0:
+				break
+			count += 1
+			temp = list()
+			indexes = list()
+			# backbones is a KV pair, K - i, V - 0,n
+			for choice in random.sample(list(backbones.items()), topSelection):
+				indexes.append(choice[0])
+				temp = temp + list(altTour[choice[0]][1])
+			var = list()
+			for item in temp:
+				if str(type(item)) == "<class 'bbn.views.Backbone'>":
+					var.append(item)
+			if len(var) >= topSelection:
+				breakout = False
+				for vari in range(1, len(var)):
+					if not distance(var[0], var[vari]) < density*2:
+						breakout = True
+						break
+				if not breakout:
+					distances = True
+					cities = cities + temp
+					for ind in indexes:
+						altTour[ind][0] = -1
+			if count == 100000:
+				break
 
 	for tour in altTour:
-		for city in tour:
-			cit.append(city)
+		if not tour[0] == -1:
+			for city in tour[1]:
+				if tour[0] > 0 and str(type(city)) == "<class 'bbn.views.Backbone'>":
+					for cit in city.y:
+						cities.append(cit)
+				else:
+					cities.append(city)
 
-	if len(cities) > 1000:
-		return repeatedNN(set(cit), 100)
+	if len(cities) < 200:
+		return repeatedNN(set(cities), len(cities))
+	else:
+		return 	repeatedNN(set(cities), 100)
 
-	return 	repeatedNN(set(cit), len(cit))
+def rouletteSel(weightStore):
+	"""Return selction from a list of tour lengths."""
+	weights = list()
+	sumOfWeights = 0
+	for sample in weightStore:
+		weights.append(weightStore[sample][0])
+		sumOfWeights += weightStore[sample][0]
+	selections = [0]*len(weights)
+	for i in range(len(weights)):
+		unlock = False
+		value = random.uniform(0, 1)*sumOfWeights
+		for i in range(len(weights)):
+			value -= weights[i]
+			if value < 0:
+				selections[i] += 1
+				break
+			if (i == (len(weights) - 1)):
+				unlock = True
+		if unlock and value < 0:
+			selections[len(weights) - 1] += 1
+	return selections.index(max(selections))
 
-
-#plot backboneclusters
 def plotBackboneClusters(tour):
-    #plotting backbones in the districts
+    """Plot all backbone in tour."""
     for cities in tour:
         if str(type(cities)) == "<class 'bbn.views.Backbone'>":
             plotTour(cities.y, "bb")
     plt.show()
 
-
-#plot backbones
-
 def plotBackbones(tour):
-    #plots backbones individually
+    """Plot all backbone in tour on individual figures."""
     for cities in tour:
         if str(type(cities)) == "<class 'bbn.views.Backbone'>":
             plotTour(cities.y, "bb")
             plt.show()
 
-#need to save bbtour into variable to use thise
 def plotPackage(bbtour):
 	plotBackboneClusters(bbtour)
 	plotBackbones(bbtour)
 
 
 def info(bbtour, *args):
+	"""Main method."""
 	temp = list()
 	t0 = time.clock()
 	bb = windowMethod(bbtour, args)
@@ -802,7 +810,7 @@ def info(bbtour, *args):
 	return [cartesian, text, length, listOfBackbones]
 
 def benchmarkBB(cartList):
-	#go through the cartesian list and mark tuples
+	"""Plot all backbone in tour."""
 	listBB = []
 
 	for xy in range(0, len(cartList) - 1, 2):
@@ -811,6 +819,7 @@ def benchmarkBB(cartList):
 	return listBB
 
 def generateClusters(cities, clusterSize, radius):
+	"""Returns number of cities of clusterSize that is in radius."""
 	cluster = list()
 	exit = False
 
@@ -831,10 +840,9 @@ def generateClusters(cities, clusterSize, radius):
 	return cluster
 
 
-# rudimentary/redundant process to display backbone process on the landing page.
 def landingBackbones(tours):
+	"""Main method."""
 	t0 = time.clock()
-	# conver the points to city objects
 	tspSolutions = list()
 	for i in range(6):
 		tmp = list()
@@ -843,7 +851,7 @@ def landingBackbones(tours):
 			tmp.append(City(tmp2[j*2], tmp2[j*2+1]))
 		tspSolutions.append(tmp)
 
-	#solutions into a dictionary by their length
+	# solutions into a dictionary by their length
 	topDict = {}
 
 	# calculates the length for each tour
@@ -853,7 +861,7 @@ def landingBackbones(tours):
 	top = list()
 	# gets top 10 percent of shortest tours, backbone error may get a backbone not in the tour???
 	for i in range(0, 3):
-		#picking method
+		# picking method
 		tmp = random.choice(topDict.keys())
 		top.append(list(tmp))
 		del topDict[tmp]
