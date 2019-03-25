@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gshe7ia!j&g48@6p9gyf%&b-y#1j=i7v=ihhmsk3b_*!j+dbdf'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['bbsite123321.herokuapp.com', '127.0.0.1']
 
@@ -69,7 +70,7 @@ ROOT_URLCONF = 'bbsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates', 'bbn/templates'],
+        'DIRS': ['bbsite/templates', 'bbsite/bbn/templates', 'templates', 'bbn/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -139,12 +140,18 @@ USE_TZ = True
 STATIC_URL = '/static/some_static/'
 
 #deployment
-STATIC_ROOT = '/static/some_static'
+STATIC_ROOT = '/static/some_static/'
+
+try:
+    # PyInstaller creates a temp folder and stores path in _MEIPASS
+    base_path = sys._MEIPASS
+except Exception:
+    base_path = BASE_DIR
+
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static", "some_static"),
+    os.path.join(base_path, "static/some_static"),
 )
-
 
 #Django redux settings
 ACCOUNT_ACTIVATION_DAYS = 7

@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['bbsite/manage.py'],
-             pathex=[''],
+             pathex=[],
              binaries=[],
-             datas=[('bbsite/static', 'static_root')],
+             datas=[('bbsite/static/some_static', 'static_root')],
              hiddenimports=['django.template.defaulttags', 'django.template.loader_tags', 
                             '_sysconfigdata', 'django.contrib.sessions', 'django.contrib.admin',
                             'django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions',
