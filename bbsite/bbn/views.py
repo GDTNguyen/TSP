@@ -32,7 +32,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 def home(request):
 	context = {}
 	MYSITE = Site.objects.get_current()
-	MYSITE.domain = '127.0.0.1:8000'
+	MYSITE.domain = 'https://finalbb.herokuapp.com'
 	MYSITE.name = 'My Site'
 	MYSITE.save()
 
@@ -255,7 +255,7 @@ def register(request):
 			usr.save()
 			regProfile = RegistrationProfile.objects.create_profile(usr)
 			regProfile.send_activation_email(mysite)
-			return redirect('http://127.0.0.1:8000', args)
+			return redirect('https://finalbb.herokuapp.com', args)
 		return render(request, 'registration/registration_form.html', {'form': formz})
 	else:
 		form = registerForm()

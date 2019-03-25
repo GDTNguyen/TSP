@@ -26,7 +26,7 @@ SECRET_KEY = 'gshe7ia!j&g48@6p9gyf%&b-y#1j=i7v=ihhmsk3b_*!j+dbdf'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['bbsite123321.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['finalbb.herokuapp.com', '127.0.0.1']
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'k1502450@gmail.com'
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE_CLASSES = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -79,10 +80,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'libraries': { # Adding this section should work around the issue.
-                'staticfiles' : 'django.templatetags.static',
-                'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags'
-            },
         },
     },
 ]
@@ -134,23 +131,12 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
+STATIC_URL = '/static/'
 
-STATIC_URL = '/static/some_static/'
-
-#deployment
-STATIC_ROOT = '/static/some_static/'
-
-try:
-    # PyInstaller creates a temp folder and stores path in _MEIPASS
-    base_path = sys._MEIPASS
-except Exception:
-    base_path = BASE_DIR
-
+STATIC_ROOT = (os.path.join(BASE_DIR, "static"))
 
 STATICFILES_DIRS = (
-    os.path.join(base_path, "static/some_static"),
+    os.path.join(BASE_DIR, "static", "some_static"),
 )
 
 #Django redux settings
@@ -159,8 +145,7 @@ REGISTRATION_AUTO_LOGIN = True
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 
-#  Add configuration for static files storage using whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 
 import dj_database_url
@@ -168,5 +153,5 @@ prod_db  =  dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(prod_db)
 
 # django security layer
-# SECURE_SSL_REDIRECT = False
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
