@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gshe7ia!j&g48@6p9gyf%&b-y#1j=i7v=ihhmsk3b_*!j+dbdf'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['bbsite123321.herokuapp.com', '127.0.0.1']
 
@@ -70,7 +70,7 @@ ROOT_URLCONF = 'bbsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['bbsite/templates', 'bbsite/bbn/templates', 'templates', 'bbn/templates'],
+        'DIRS': ['bbsite/templates', 'bbsite/bbn/templates', 'templates', 'bbn/templates', 'bbsite/templates/bootstrap'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,8 +80,22 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
             'libraries': { # Adding this section should work around the issue.
+                'i18n' : 'django.templatetags.i18n',
+                'cache' : 'django.templatetags.cache',
+                'future' : 'django.templatetags.future',
+                'l10n' : 'django.templatetags.l10n',
+                'static' : 'django.templatetags.static',
+                'tz' : 'django.templatetags.tz',
                 'staticfiles' : 'django.templatetags.static',
-                'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags'
+                'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags',
+                'crispy_forms_utils': 'crispy_forms.templatetags.crispy_forms_utils',
+                'crispy_forms_field': 'crispy_forms.templatetags.crispy_forms_field',
+                'crispy_forms_filters': 'crispy_forms.templatetags.crispy_forms_filters',
+                'admin_static': 'django.contrib.admin.templatetags.admin_static',
+                'admin_list': 'django.contrib.admin.templatetags.admin_list',
+                'admin_modify': 'django.contrib.admin.templatetags.admin_modify',
+                'admin_urls': 'django.contrib.admin.templatetags.admin_urls',
+                'log': 'django.contrib.admin.templatetags.log',
             },
         },
     },
@@ -140,7 +154,7 @@ USE_TZ = True
 STATIC_URL = '/static/some_static/'
 
 #deployment
-STATIC_ROOT = '/static/some_static/'
+STATIC_ROOT = 'bbsite/static/some_static/'
 
 try:
     # PyInstaller creates a temp folder and stores path in _MEIPASS
@@ -150,7 +164,7 @@ except Exception:
 
 
 STATICFILES_DIRS = (
-    os.path.join(base_path, "static/some_static"),
+    os.path.join(base_path, "."),
 )
 
 #Django redux settings
@@ -159,14 +173,4 @@ REGISTRATION_AUTO_LOGIN = True
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 
-#  Add configuration for static files storage using whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
-import dj_database_url
-prod_db  =  dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(prod_db)
-
-# django security layer
-# SECURE_SSL_REDIRECT = False
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
