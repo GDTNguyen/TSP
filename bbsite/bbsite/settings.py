@@ -70,7 +70,7 @@ ROOT_URLCONF = 'bbsite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['bbsite/templates', 'bbsite/bbn/templates', 'templates', 'bbn/templates'],
+        'DIRS': ['bbsite/templates', 'bbsite/bbn/templates', 'templates', 'bbn/templates', 'bbsite/templates/bootstrap'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,8 +81,21 @@ TEMPLATES = [
             ],
             'libraries': { # Adding this section should work around the issue.
                 'i18n' : 'django.templatetags.i18n',
+                'cache' : 'django.templatetags.cache',
+                'future' : 'django.templatetags.future',
+                'l10n' : 'django.templatetags.l10n',
+                'static' : 'django.templatetags.static',
+                'tz' : 'django.templatetags.tz',
                 'staticfiles' : 'django.templatetags.static',
-                'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags'
+                'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags',
+                'crispy_forms_utils': 'crispy_forms.templatetags.crispy_forms_utils',
+                'crispy_forms_field': 'crispy_forms.templatetags.crispy_forms_field',
+                'crispy_forms_filters': 'crispy_forms.templatetags.crispy_forms_filters',
+                'admin_static': 'django.contrib.admin.templatetags.admin_static',
+                'admin_list': 'django.contrib.admin.templatetags.admin_list',
+                'admin_modify': 'django.contrib.admin.templatetags.admin_modify',
+                'admin_urls': 'django.contrib.admin.templatetags.admin_urls',
+                'log': 'django.contrib.admin.templatetags.log',
             },
         },
     },
