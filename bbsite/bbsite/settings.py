@@ -80,6 +80,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
             'libraries': { # Adding this section should work around the issue.
+                'i18n' : 'django.templatetags.i18n',
                 'staticfiles' : 'django.templatetags.static',
                 'crispy_forms_tags': 'crispy_forms.templatetags.crispy_forms_tags'
             },
