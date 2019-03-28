@@ -627,11 +627,11 @@ def bbReduction(tour, *args):
 
 	backbones = list()
 	for backbone in getAllBackBones(top, args[0]):
-		backbones.append(backboneEdgesToBackbones(backbone))
+		backbones.append(bbEdgesToBB(backbone))
 
 	reducedTours = set()
 	for backbone in backbones:
-		for tour in backboneSubstitution(top, backbone):
+		for tour in bbSubstitution(top, backbone):
 			reducedTours.add(tuple(tour))
 	smallest = {}
 	for tour in reducedTours:
