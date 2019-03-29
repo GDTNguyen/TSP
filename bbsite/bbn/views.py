@@ -496,7 +496,7 @@ def getAllBackBones(tours, *args):
 				if k == lengthTours - 1 and not switch:
 					switch = True
 
-	if len(args[0]) == 0:
+	if int(args[0][0]) == 0:
 		return prunebackBonesGELE(backbones, 2, 3)
 	else:
 		for x in args:
@@ -588,6 +588,7 @@ def bbReduction(tour, *args):
 			tmp = random.choice(topDict.keys())
 			top.append(list(tmp))
 			del topDict[tmp]
+		maxi = 99
 	else:
 		avg = sum(topDict.values()) / len(topDict)
 		for val in topDict:
@@ -622,12 +623,14 @@ def bbReduction(tour, *args):
 		for item in store:
 			if counter == indexRoulette:
 				top = store[item][random.randint(1, len(store[item]) - 1)]
+				maxi = store[item][0]
 				break
 			counter += 1
 
 	backbones = list()
 	for backbone in getAllBackBones(top, args[0]):
-		backbones.append(bbEdgesToBB(backbone))
+		if len(backbone) > 1:
+			backbones.append(bbEdgesToBB(backbone))
 
 	reducedTours = set()
 	for backbone in backbones:
