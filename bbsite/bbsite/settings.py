@@ -154,7 +154,7 @@ USE_TZ = True
 STATIC_URL = '/static/some_static/'
 
 #deployment
-STATIC_ROOT = 'bbsite/static/some_static/'
+STATIC_ROOT = '/static/some_static/'
 
 try:
     # PyInstaller creates a temp folder and stores path in _MEIPASS
@@ -164,7 +164,7 @@ except Exception:
 
 
 STATICFILES_DIRS = (
-    os.path.join(base_path, "."),
+    os.path.join(base_path, "static/some_static"),
 )
 
 #Django redux settings
