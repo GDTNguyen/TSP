@@ -622,6 +622,7 @@ def bbReduction(tour, *args):
 		for item in store:
 			if counter == indexRoulette:
 				top = store[item][random.randint(1, len(store[item]) - 1)]
+				maxi = store[item][0]
 				break
 			counter += 1
 
