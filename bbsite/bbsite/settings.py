@@ -154,7 +154,7 @@ USE_TZ = True
 STATIC_URL = '/static/some_static/'
 
 #deployment
-STATIC_ROOT = '/static/some_static/'
+STATIC_ROOT = 'bbsite/static/some_static/'
 
 try:
     # PyInstaller creates a temp folder and stores path in _MEIPASS
