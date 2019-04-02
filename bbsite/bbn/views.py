@@ -497,8 +497,11 @@ def getAllBackBones(tours, *args):
 					switch = True
 
 	try:
-		if args or int(args[0][0]) == 0:
+		if len(args[0]) == 0 or int(args[0][0]) == 0:
 			return prunebackBonesGELE(backbones, 2, 3)
+		else:
+			for x in args:
+				return prunebackBonesLE(backbones, x[0])
 	except:
 		for x in args:
 			return prunebackBonesLE(backbones, x[0])
